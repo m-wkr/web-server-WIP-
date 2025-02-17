@@ -11,9 +11,16 @@ enum requestTypes {
   POST
 };
 
-//best make request object
+struct request {
+  requestTypes method;
+  std::string requestTarget;
+  std::map<std::string,std::string> headers;
 
-void parseStartLine(std::string &startLine,requestTypes &method, std::string &requestTarget) {
+  private:
+  std::string rawBody;
+};
+
+void parseStartLine(std::string &startLine, request &request) {
   std::stringstream rawString(startLine);
   std::string temp;
 
@@ -23,20 +30,20 @@ void parseStartLine(std::string &startLine,requestTypes &method, std::string &re
     if (i == 0) {
 
       if (temp == "GET") {
-        method = GET;
+        request.method = GET;
       } else if (temp == "HEAD") {
-        method = HEAD;
+        request.method = HEAD;
       } else if (temp == "PUT") {
-        method = PUT;
+        request.method = PUT;
       } else if (temp == "POST") {
-        method = POST;
+        request.method = POST;
       } else {
         //case sensitivity or invalid method to raise 501
       }
 
     } else if (i == 1) {
 
-      requestTarget = temp;
+      request.requestTarget = temp;
 
     } else if (i == 2) {
 
@@ -52,7 +59,7 @@ void parseStartLine(std::string &startLine,requestTypes &method, std::string &re
   } 
 }
 
-void spliceHeaders(std::string &headerLine, std::map<std::string,std::string> &headerHashMap) {
+void spliceHeaders(std::string &headerLine, request &request) {
   std::stringstream rawString(headerLine); //copy constructor in usage
   std::string temp;
   std::string buffer[2];
@@ -67,7 +74,7 @@ void spliceHeaders(std::string &headerLine, std::map<std::string,std::string> &h
         buffer[counter] = temp;
       }
       counter = 0;
-      headerHashMap.insert({buffer[0],buffer[1]});
+      request.headers.insert({buffer[0],buffer[1]});
     } else {
       buffer[counter] = temp;
       counter += 1;
@@ -87,13 +94,13 @@ void requestParser(const char* &&buffer) {
   //start line
   std::string startLine;
 
-  requestTypes method;
-  std::string requestTarget;
+
+  request currentRequest;
+
 
 
 
   //headers
-  std::map<std::string,std::string> headers;
 
   //body
   std::string rawBody;
@@ -107,7 +114,8 @@ void requestParser(const char* &&buffer) {
       firstLine = 0;
       //Handle with function of start line
       startLine = temp;
-      parseStartLine(startLine,method,requestTarget);
+      //parseStartLine(startLine,method,requestTarget);
+      parseStartLine(startLine,currentRequest);
 
     } else if (!temp.size()) {
 
@@ -121,7 +129,7 @@ void requestParser(const char* &&buffer) {
         rawBody += temp;
       } else {
 
-        spliceHeaders(temp,headers);
+        spliceHeaders(temp,currentRequest);
 
       }
 
@@ -130,10 +138,10 @@ void requestParser(const char* &&buffer) {
 
   //Debugging 
   std::cout << startLine << "\n";
-  std::cout << method << "-" << requestTarget << '\n';
+  std::cout << currentRequest.method << "-" << currentRequest.requestTarget << '\n';
 
-  std::map<std::string,std::string>::iterator i = headers.begin();
-  while (i != headers.end()) {
+  std::map<std::string,std::string>::iterator i = currentRequest.headers.begin();
+  while (i != currentRequest.headers.end()) {
     std::cout << i->first << "__" << i->second << '\n';
     i++;
   }
