@@ -3,6 +3,7 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include "requests.hpp"
 
 
 
@@ -35,6 +36,7 @@ int main() {
     char buffer[2048];
 
     recv(clientSocketFD,buffer, sizeof(buffer),0);
+    requestParser(buffer);
     send(clientSocketFD,"HTTP/1.1 403 forbidden\nContent-Type: text/html\n\n<!DOCTYPE html><head></head><body><p>Hi\0there</p></body>\n",sizeof("HTTP/1.1 403 forbidden\nContent-Type: text/html\n\n<!DOCTYPE html><head></head><body><p>Hi</p></body>\n"),0);
     close(serverSocket.getFD());
 
