@@ -4,8 +4,9 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include "requests.hpp"
+#include "response.hpp"
 
-
+#include <iostream>
 
 
 class socketWrapper {
@@ -37,7 +38,10 @@ int main() {
 
     recv(clientSocketFD,buffer, sizeof(buffer),0);
     requestParser(buffer);
-    send(clientSocketFD,"HTTP/1.1 403 forbidden\nContent-Type: text/html\n\n<!DOCTYPE html><head></head><body><p>Hi\0there</p></body>\n",sizeof("HTTP/1.1 403 forbidden\nContent-Type: text/html\n\n<!DOCTYPE html><head></head><body><p>Hi</p></body>\n"),0);
+    //send(clientSocketFD,"HTTP/1.1 403 forbidden\nContent-Type: text/html\n\n<!DOCTYPE html><head></head><body><p>Hi there</p></body>\n",sizeof("HTTP/1.1 403 forbidden\nContent-Type: text/html\n\n<!DOCTYPE html><head></head><body><p>Hi</p></body>\n"),0);
+    std::string response = craftResponse();
+    std::cout << response;
+    send(clientSocketFD,response.c_str(),sizeof(response),0);
     close(serverSocket.getFD());
 
     return 0;

@@ -12,9 +12,13 @@ enum requestTypes {
 };
 
 struct request {
-  requestTypes method;
+  requestTypes method = HEAD;
   std::string requestTarget;
   std::map<std::string,std::string> headers;
+
+  int errorCode = 0;
+
+  //Create handler for rawBody
 
   private:
   std::string rawBody;
@@ -38,7 +42,7 @@ void parseStartLine(std::string &startLine, request &request) {
       } else if (temp == "POST") {
         request.method = POST;
       } else {
-        //case sensitivity or invalid method to raise 501
+        request.errorCode = 405;
       }
 
     } else if (i == 1) {
@@ -49,10 +53,12 @@ void parseStartLine(std::string &startLine, request &request) {
 
       if (temp != "HTTP/1.1\r\n") {
         //handle error
+        request.errorCode = 403;
       }
 
     } else {
       //handle error of incorrect formatting
+      request.errorCode = 400;
     }
 
     i++;
@@ -91,16 +97,8 @@ void requestParser(const char* &&buffer) {
   std::stringstream rawString(buffer);
   std::string temp;
 
-  //start line
-  std::string startLine;
-
 
   request currentRequest;
-
-
-
-
-  //headers
 
   //body
   std::string rawBody;
@@ -113,9 +111,7 @@ void requestParser(const char* &&buffer) {
     if(firstLine) {
       firstLine = 0;
       //Handle with function of start line
-      startLine = temp;
-      //parseStartLine(startLine,method,requestTarget);
-      parseStartLine(startLine,currentRequest);
+      parseStartLine(temp,currentRequest);
 
     } else if (!temp.size()) {
 
@@ -137,7 +133,6 @@ void requestParser(const char* &&buffer) {
   }
 
   //Debugging 
-  std::cout << startLine << "\n";
   std::cout << currentRequest.method << "-" << currentRequest.requestTarget << '\n';
 
   std::map<std::string,std::string>::iterator i = currentRequest.headers.begin();
