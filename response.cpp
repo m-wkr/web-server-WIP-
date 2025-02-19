@@ -4,27 +4,29 @@
 
 struct response {
   std::string statusCode = "HTTP/1.1 200 OK\r\n";
+
+  std::string rawBody = "<!DOCTYPE html><head></head><body><p>Hi there</p></body>\n";
+
   std::map<std::string,std::string> headers = {
     {"Content-Type","text/html"},
-    {"Content-Length",std::to_string(sizeof("<!DOCTYPE html><head></head><body><p>Hi there</p></body>\n"))},
+    {"Content-Length",std::to_string(rawBody.size())},
     //{"Date","Tue, 18 Feb 2025 16:56:32 GMT"}
   };
-  std::string rawBody = "<!DOCTYPE html><head></head><body><p>Hi there</p></body>\n";
 
   void concatResponse() {
     constructedMsg += statusCode;
     std::map<std::string,std::string>::iterator i = headers.begin();
 
     while (i != headers.end()) {
-      constructedMsg += i->first + ": " + i->second + '\n';
+      constructedMsg += i->first + ": " + i->second + "\r\n";
       i++;
     }
 
 
     if (headers["Content-Size"] == "0") {
-      constructedMsg += '\n';
+      constructedMsg += "\r\n";
     } else {
-      constructedMsg += "\n" + rawBody;
+      constructedMsg += "\r\n" + rawBody;
     }
 
   }

@@ -38,10 +38,8 @@ int main() {
 
     recv(clientSocketFD,buffer, sizeof(buffer),0);
     requestParser(buffer);
-    //send(clientSocketFD,"HTTP/1.1 403 forbidden\nContent-Type: text/html\n\n<!DOCTYPE html><head></head><body><p>Hi there</p></body>\n",sizeof("HTTP/1.1 403 forbidden\nContent-Type: text/html\n\n<!DOCTYPE html><head></head><body><p>Hi</p></body>\n"),0);
     std::string response = craftResponse();
-    std::cout << response;
-    send(clientSocketFD,response.c_str(),sizeof(response),0);
+    send(clientSocketFD,response.c_str(),response.size(),0);
     close(serverSocket.getFD());
 
     return 0;
