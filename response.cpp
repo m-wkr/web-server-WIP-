@@ -1,5 +1,6 @@
 #include <map>
 #include <iostream>
+#include <ctime>
 #include "response.hpp"
 
 struct response {
@@ -10,8 +11,16 @@ struct response {
   std::map<std::string,std::string> headers = {
     {"Content-Type","text/html"},
     {"Content-Length",std::to_string(rawBody.size())},
-    //{"Date","Tue, 18 Feb 2025 16:56:32 GMT"}
   };
+
+  void addDateHeader() {
+    time_t timestamp = std::time(NULL);
+    struct tm datetime = *gmtime(&timestamp);
+    char dateString[50];
+    std::strftime(dateString,50,"%a, %e %b %Y %H:%M:%S GMT",&datetime);
+
+    headers["Date"] = dateString;
+  }
 
   void concatResponse() {
     constructedMsg += statusCode;
@@ -43,6 +52,7 @@ struct response {
 
 std::string craftResponse() {
   response currentResponse;
+  currentResponse.addDateHeader();
   currentResponse.concatResponse();
   return currentResponse.getMsg();
 }
