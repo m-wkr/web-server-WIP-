@@ -1,28 +1,7 @@
 #include <iostream>
-#include <string>
 #include <sstream>
-#include <map>
+#include "requests.hpp"
 
-//WIP TO BE EXPANDED
-enum requestTypes {
-  GET,
-  HEAD,
-  PUT,
-  POST
-};
-
-struct request {
-  requestTypes method = HEAD;
-  std::string requestTarget;
-  std::map<std::string,std::string> headers;
-
-  int errorCode = 0;
-
-  //Create handler for rawBody
-
-  private:
-  std::string rawBody;
-};
 
 void parseStartLine(std::string &startLine, request &request) {
   std::stringstream rawString(startLine);
@@ -93,12 +72,12 @@ void spliceHeaders(std::string &headerLine, request &request) {
 
 
 
-void requestParser(const char* &&buffer) {
+void requestParser(const char* &&buffer, request &currentRequest) {
   std::stringstream rawString(buffer);
   std::string temp;
 
 
-  request currentRequest;
+  //request currentRequest;
 
   //body
   std::string rawBody;
