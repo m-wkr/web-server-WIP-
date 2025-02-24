@@ -16,7 +16,19 @@ struct request {
   
   int errorCode = 0;
   
-  //Create handler for rawBody
+  std::string getBody() {
+    return rawBody;
+  }
+
+  std::string getSpecifiedHeader(const std::string &headerName) {
+    try {
+      return headers.at(headerName);
+    }
+    catch (...) {
+      return "";
+    }
+    
+  }
   
   private:
   std::string rawBody;

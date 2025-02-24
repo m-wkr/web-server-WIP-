@@ -5,16 +5,28 @@
 #include <sstream>
 #include <fstream>
 
-//Serving static content
+
 
 struct resourceStatus {
   int statusCode = 200;
   std::string body;
 };
 
+enum resourceType {
+  STATIC,
+  PROGRAM_SET
+};
+
+
+struct designatedResource{
+  resourceType type;
+  std::string contentHolder; //either file path or actual payload (rename to payload soon)
+};
+
+
 class server {
   //Hold file path abstraction mappings
-  std::map<std::string,std::string> fileHandlers = {};
+  std::map<std::string, designatedResource> resourceHandlers = {};
 
   //Request holder
   request currentRequest;
@@ -27,14 +39,14 @@ class server {
   public:
   //Adds a default path - not allowing much (if any) tampering and currently only allows service of just one file
   void addFileHandler(const std::string& path, const std::string& filePath) {
-    fileHandlers[path] = filePath;
+    resourceHandlers[path] = designatedResource({STATIC, filePath});
   }
 
   resourceStatus retrieveResource(std::string& invokedPath) {
     resourceStatus currentResource;
 
     try {
-      std::ifstream targetFile(fileHandlers.at(invokedPath));
+      std::ifstream targetFile(resourceHandlers.at(invokedPath).contentHolder);
       std::string temp;
 
       while (getline(targetFile,temp)) {
@@ -52,7 +64,11 @@ class server {
 
 
 
+  void manageConnection(const std::string &path, void (*fPtr)(request &req,response &res)) {
+    (*fPtr)(currentRequest,responseToBeSent);
+    resourceHandlers[path] = designatedResource({PROGRAM_SET, ""});
 
+  }
 
 
 
@@ -69,13 +85,18 @@ class server {
     requestParser(buffer,currentRequest);
     //Create response
     //1. Fetch requested resource
-    resourceStatus resource = retrieveResource(currentRequest.requestTarget);
+    std::string responseMsg;
 
-
-
+    if (resourceHandlers[currentRequest.requestTarget].type == STATIC) {
+      resourceStatus resource = retrieveResource(currentRequest.requestTarget);
+      responseToBeSent.setBody(resource.body);
+    } //else expect body to be set by users
     //2. Construct resource & send it
-    std::string response = craftResponse(responseToBeSent,resource.body);
-    send(clientSocketFD,response.c_str(),response.size(),0);
+    responseToBeSent.addDateHeader();
+    responseToBeSent.concatResponse();
+    responseMsg = responseToBeSent.getMsg();
+
+    send(clientSocketFD,responseMsg.c_str(),responseMsg.size(),0);
     close(serverSocket.getFD());
   }
 };
