@@ -2,8 +2,10 @@
 
 void randomHTML(request &req, response &res) {
   std::string temp = "<!DOCTYPE html><head></head><body>Testing</body>";
+
+  std::string fileContent = retrieveFile("index.html").body;
   res.setBody(
-    temp
+    fileContent
   );
 };
 
