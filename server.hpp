@@ -15,8 +15,6 @@ struct resourceStatus {
 
 
 class server {
-  //Hold file path abstraction mappings
-
   //Request holder
   request currentRequest;
   //Response holder
@@ -28,12 +26,8 @@ class server {
   public:
   void manageConnection(const std::string &path, void (*fPtr)(request &req,response &res)) {
     (*fPtr)(currentRequest,responseToBeSent);
-    //resourceHandlers[path] = designatedResource({USER_SET, ""});
 
   }
-
-
-
 
   void startListening() {
     listen(serverSocket.getFD(),5);
@@ -45,15 +39,13 @@ class server {
     //Obtain request info
     recv(clientSocketFD,buffer,sizeof(buffer),0);
     requestParser(buffer,currentRequest);
-    //Create response
-    //1. Fetch requested resource
-    std::string responseMsg;    
+  
     
-    //else expect body to be set by users
+    //expect body to be set by users
     //2. Construct resource & send it
     responseToBeSent.addDateHeader();
     responseToBeSent.concatResponse();
-    responseMsg = responseToBeSent.getMsg();
+    std::string responseMsg = responseToBeSent.getMsg();
 
     send(clientSocketFD,responseMsg.c_str(),responseMsg.size(),0);
     close(serverSocket.getFD());

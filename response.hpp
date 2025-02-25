@@ -3,14 +3,24 @@
 #include <ctime>
 
 struct response {
-  std::string statusCode = "HTTP/1.1 200 OK\r\n";
+  std::string statusCode = "HTTP/1.1 ";
 
   std::string rawBody = "<!DOCTYPE html><head></head><body><p>Hi there</p></body>\n";
 
   std::map<std::string,std::string> headers = {
-    {"Content-Type","text/html"},
-    {"Content-Length",std::to_string(rawBody.size())},
   };
+
+  void addStatusCode(int &value) {
+
+    switch (value) {
+      case (200):
+        statusCode += "200 OK\r\n";
+        break;
+      case (404):
+        statusCode += "404 Not Found\r\n";
+        break;
+    }
+  }
 
   void addDateHeader() {
     time_t timestamp = std::time(NULL);
@@ -19,6 +29,11 @@ struct response {
     std::strftime(dateString,50,"%a, %e %b %Y %H:%M:%S GMT",&datetime);
 
     headers["Date"] = dateString;
+  }
+
+  void setBody(std::string &body) {
+    rawBody = body;
+    headers["Content-Length"] = std::to_string(rawBody.size());
   }
 
   void concatResponse() {
@@ -43,20 +58,7 @@ struct response {
     return constructedMsg;
   }
 
-  void setBody(std::string &body) {
-    rawBody = body;
-    headers["Content-Length"] = std::to_string(rawBody.size());
-  }
 
   private:
   std::string constructedMsg;
 };
-
-
-std::string craftResponse(response &currentResponse, std::string &fileContent) {
-  currentResponse.setBody(fileContent);
-  currentResponse.addDateHeader();
-  currentResponse.concatResponse();
-  return currentResponse.getMsg();
-}
-
