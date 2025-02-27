@@ -15,6 +15,9 @@ struct resourceStatus {
 
 
 class server {
+  //function ptr file handlers
+  std::map<std::string,void (*)(request &req, response &res)> pathHandler = {};
+
   //Request holder
   request currentRequest;
   //Response holder
@@ -25,8 +28,7 @@ class server {
 
   public:
   void manageConnection(const std::string &path, void (*fPtr)(request &req,response &res)) {
-    (*fPtr)(currentRequest,responseToBeSent);
-
+    pathHandler[path] = fPtr;
   }
 
   void startListening() {
@@ -40,8 +42,14 @@ class server {
     recv(clientSocketFD,buffer,sizeof(buffer),0);
     requestParser(buffer,currentRequest);
   
-    
     //expect body to be set by users
+    try {
+      pathHandler.at(currentRequest.requestTarget)(currentRequest,responseToBeSent);
+    }
+    catch (...) {
+      responseToBeSent.addStatusCode(404);
+    }
+    //pathHandler[currentRequest.requestTarget](currentRequest,responseToBeSent);
     //2. Construct resource & send it
     responseToBeSent.addDateHeader();
     responseToBeSent.concatResponse();

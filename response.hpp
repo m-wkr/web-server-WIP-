@@ -5,12 +5,24 @@
 struct response {
   std::string statusCode = "HTTP/1.1 ";
 
-  std::string rawBody = "<!DOCTYPE html><head></head><body><p>Hi there</p></body>\n";
+  std::string rawBody = "";
 
   std::map<std::string,std::string> headers = {
   };
 
   void addStatusCode(int &value) {
+
+    switch (value) {
+      case (200):
+        statusCode += "200 OK\r\n";
+        break;
+      case (404):
+        statusCode += "404 Not Found\r\n";
+        break;
+    }
+  }
+
+  void addStatusCode(int &&value) {
 
     switch (value) {
       case (200):
@@ -33,6 +45,7 @@ struct response {
 
   void setBody(std::string &body) {
     rawBody = body;
+    headers["Content-Type"] = "text/html"; //temporary 
     headers["Content-Length"] = std::to_string(rawBody.size());
   }
 

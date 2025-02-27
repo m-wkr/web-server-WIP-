@@ -112,7 +112,7 @@ void requestParser(const char* &&buffer, request &currentRequest) {
   }
 
   //Debugging 
-  std::cout << currentRequest.method << "-" << currentRequest.requestTarget << '\n';
+  /*std::cout << currentRequest.method << "-" << currentRequest.requestTarget << '\n';
 
   std::map<std::string,std::string>::iterator i = currentRequest.headers.begin();
   while (i != currentRequest.headers.end()) {
@@ -120,6 +120,6 @@ void requestParser(const char* &&buffer, request &currentRequest) {
     i++;
   }
 
-  std::cout << rawBody;
+  std::cout << rawBody;*/
 
 }
