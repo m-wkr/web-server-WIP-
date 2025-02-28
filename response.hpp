@@ -16,8 +16,17 @@ struct response {
       case (200):
         statusCode += "200 OK\r\n";
         break;
+      case (400):
+        statusCode += "400 Bad Request\r\n";
+        break;
+      case (403):
+      statusCode += "403 Forbidden\r\n";
+        break;
       case (404):
         statusCode += "404 Not Found\r\n";
+        break;
+      case (405):
+        statusCode += "405 Method Not Allowed\r\n";
         break;
     }
   }

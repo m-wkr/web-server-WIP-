@@ -8,7 +8,6 @@ void randomHTML(request &req, response &res) {
   if (temp1.statusCode == 200) {
     res.setBody(temp1.body);
   }
-  res.addStatusCode(temp1.statusCode);
 
 };
 

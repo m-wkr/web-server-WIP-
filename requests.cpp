@@ -29,8 +29,7 @@ void parseStartLine(std::string &startLine, request &request) {
       request.requestTarget = temp;
 
     } else if (i == 2) {
-
-      if (temp != "HTTP/1.1\r\n") {
+      if (temp != "HTTP/1.1\r") {
         //handle error
         request.errorCode = 403;
       }

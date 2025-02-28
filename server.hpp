@@ -44,12 +44,17 @@ class server {
   
     //expect body to be set by users
     try {
-      pathHandler.at(currentRequest.requestTarget)(currentRequest,responseToBeSent);
+      if (currentRequest.errorCode == 200) {
+        pathHandler.at(currentRequest.requestTarget)(currentRequest,responseToBeSent);
+      }
     }
     catch (...) {
-      responseToBeSent.addStatusCode(404);
+      currentRequest.errorCode = 404;
     }
-    //pathHandler[currentRequest.requestTarget](currentRequest,responseToBeSent);
+
+    responseToBeSent.addStatusCode(currentRequest.errorCode);
+
+
     //2. Construct resource & send it
     responseToBeSent.addDateHeader();
     responseToBeSent.concatResponse();

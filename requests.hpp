@@ -14,7 +14,7 @@ struct request {
   std::string requestTarget;
   std::map<std::string,std::string> headers;
   
-  int errorCode = 0;
+  int errorCode = 200;
   
   std::string getBody() {
     return rawBody;
