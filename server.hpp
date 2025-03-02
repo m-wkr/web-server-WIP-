@@ -2,15 +2,6 @@
 #include "socketWrapper.hpp"
 #include "response.hpp"
 #include <iostream>
-#include <sstream>
-#include <fstream>
-
-
-
-struct resourceStatus {
-  int statusCode = 200;
-  std::string body;
-};
 
 
 
@@ -64,24 +55,3 @@ class server {
     close(serverSocket.getFD());
   }
 };
-
-
-resourceStatus retrieveFile(std::string &&invokedPath) {
-  resourceStatus currentResource;
-
-  try {
-    std::ifstream targetFile(invokedPath);
-    std::string temp;
-
-    while (getline(targetFile,temp)) {
-      currentResource.body += temp;
-    }
-
-    targetFile.close();
-  }
-  catch (...) {
-    currentResource.statusCode = 404;
-  }
-
-  return currentResource;
-}

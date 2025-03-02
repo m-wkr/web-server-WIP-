@@ -2,6 +2,14 @@
 #include <map>
 #include <ctime>
 
+#include <sstream>
+#include <fstream>
+
+struct resourceStatus {
+  int statusCode = 200;
+  std::string body;
+};
+
 struct response {
   std::string statusCode = "HTTP/1.1 ";
 
@@ -80,6 +88,27 @@ struct response {
     return constructedMsg;
   }
 
+  void retrieveFile(std::string &&invokedPath) {
+    resourceStatus currentResource;
+  
+    try {
+      std::ifstream targetFile(invokedPath);
+      std::string temp;
+  
+      while (getline(targetFile,temp)) {
+        currentResource.body += temp;
+      }
+  
+      targetFile.close();
+    }
+    catch (...) {
+      currentResource.statusCode = 404;
+    }
+  
+    if (currentResource.statusCode == 200) {
+      setBody(currentResource.body);
+    }
+  }
 
   private:
   std::string constructedMsg;
