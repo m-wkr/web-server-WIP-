@@ -1,52 +1,54 @@
-#include <string>
 #include <map>
 #include <ctime>
+#include <iostream>
 
 #include <sstream>
 #include <fstream>
 
-struct resourceStatus {
-  int statusCode = 200;
-  std::string body;
-};
+#include "mimeTypes.hpp"
 
 struct response {
-  std::string statusCode = "HTTP/1.1 ";
+  std::string statusCodeStr = "HTTP/1.1 ";
+
+  int statusCode = 200;
 
   std::string rawBody = "";
 
   std::map<std::string,std::string> headers = {
   };
 
-  void addStatusCode(int &value) {
+  void addStatusCode(const int &value) {
 
     switch (value) {
       case (200):
-        statusCode += "200 OK\r\n";
+        statusCodeStr += "200 OK\r\n";
         break;
       case (400):
-        statusCode += "400 Bad Request\r\n";
+        statusCodeStr += "400 Bad Request\r\n";
         break;
       case (403):
-      statusCode += "403 Forbidden\r\n";
+      statusCodeStr += "403 Forbidden\r\n";
         break;
       case (404):
-        statusCode += "404 Not Found\r\n";
+        statusCodeStr += "404 Not Found\r\n";
         break;
       case (405):
-        statusCode += "405 Method Not Allowed\r\n";
+        statusCodeStr += "405 Method Not Allowed\r\n";
+        break;
+      case (500):
+        statusCodeStr += "500 Internal Server Error\r\n";
         break;
     }
   }
 
-  void addStatusCode(int &&value) {
+  void addStatusCode(const int &&value) {
 
     switch (value) {
       case (200):
-        statusCode += "200 OK\r\n";
+        statusCodeStr += "200 OK\r\n";
         break;
       case (404):
-        statusCode += "404 Not Found\r\n";
+        statusCodeStr += "404 Not Found\r\n";
         break;
     }
   }
@@ -60,14 +62,14 @@ struct response {
     headers["Date"] = dateString;
   }
 
-  void setBody(std::string &body) {
+  void setBody(const std::string &MIMEtype,const std::string &body) {
     rawBody = body;
-    headers["Content-Type"] = "text/html"; //temporary 
+    headers["Content-Type"] = MIMEtype;
     headers["Content-Length"] = std::to_string(rawBody.size());
   }
 
   void concatResponse() {
-    constructedMsg += statusCode;
+    constructedMsg += statusCodeStr;
     std::map<std::string,std::string>::iterator i = headers.begin();
 
     while (i != headers.end()) {
@@ -84,30 +86,41 @@ struct response {
 
   }
 
-  std::string getMsg() {
-    return constructedMsg;
+  void retrieveFile(const std::string &&invokedPath) {
+    std::string tempBodyHolder;
+
+    MIME mType = determineMIME(invokedPath);
+
+    if (mType != ERR) {
+  
+      try {
+        std::ifstream targetFile(invokedPath);
+        std::string temp;
+    
+        while (getline(targetFile,temp)) {
+          tempBodyHolder += temp;
+        }
+    
+        targetFile.close();
+      }
+      catch (...) {
+        statusCode = 404;
+      }
+
+    } else {
+      statusCode = 500;
+
+      //Serverside warning
+      std::cout << "File retrieval exited. Make sure the file has a valid extension suffix.\n";
+    }
+
+    if (statusCode == 200) {
+      setBody(getContentType(mType),tempBodyHolder);
+    } 
   }
 
-  void retrieveFile(std::string &&invokedPath) {
-    resourceStatus currentResource;
-  
-    try {
-      std::ifstream targetFile(invokedPath);
-      std::string temp;
-  
-      while (getline(targetFile,temp)) {
-        currentResource.body += temp;
-      }
-  
-      targetFile.close();
-    }
-    catch (...) {
-      currentResource.statusCode = 404;
-    }
-  
-    if (currentResource.statusCode == 200) {
-      setBody(currentResource.body);
-    }
+  std::string getMsg() {
+    return constructedMsg;
   }
 
   private:
