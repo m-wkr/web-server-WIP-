@@ -19,7 +19,11 @@ struct response {
 
   void addStatusCode(const int &value) {
 
-    switch (value) {
+    if (value != 200) {
+      statusCode = value;
+    }
+
+    switch (statusCode) {
       case (200):
         statusCodeStr += "200 OK\r\n";
         break;

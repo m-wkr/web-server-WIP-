@@ -43,11 +43,7 @@ class server {
       currentRequest.errorCode = 404;
     }
 
-    if (responseToBeSent.statusCode == 200 && currentRequest.errorCode != 200) {
-      responseToBeSent.addStatusCode(currentRequest.errorCode);
-    } else {
-      responseToBeSent.addStatusCode(responseToBeSent.statusCode);
-    }
+    responseToBeSent.addStatusCode(currentRequest.errorCode);
 
 
     //2. Construct resource & send it
