@@ -70,6 +70,7 @@ struct response {
     rawBody = body;
     headers["Content-Type"] = MIMEtype;
     headers["Content-Length"] = std::to_string(rawBody.size());
+    headers["Server"] = "WIP/1.0.0";
   }
 
   void concatResponse() {
