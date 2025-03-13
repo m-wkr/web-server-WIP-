@@ -75,21 +75,24 @@ void requestParser(const char* &&buffer, request &currentRequest) {
   std::stringstream rawString(buffer);
   std::string temp;
 
-
-  //request currentRequest;
-
   //body
   std::string rawBody;
 
-
   bool firstLine = true;
   bool atBody = false;
+  
   while (getline(rawString,temp)) {
 
-    if(firstLine) {
-      firstLine = 0;
-      //Handle with function of start line
-      parseStartLine(temp,currentRequest);
+    if (firstLine) {
+
+      if (temp != "" && temp != "\r") {
+
+        firstLine = 0;
+        //Handle with function of start line
+        parseStartLine(temp,currentRequest);
+
+      }
+      //Ignore empty lines preceding firstLine
 
     } else if (!temp.size()) {
 
