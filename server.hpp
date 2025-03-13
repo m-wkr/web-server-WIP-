@@ -48,6 +48,8 @@ class server {
 
     //2. Construct resource & send it
     responseToBeSent.addDateHeader();
+    responseToBeSent.setGeneralHeaders();
+    responseToBeSent.setAllowHeader();
     responseToBeSent.concatResponse();
     std::string responseMsg = responseToBeSent.getMsg();
 

@@ -66,12 +66,21 @@ struct response {
     headers["Date"] = dateString;
   }
 
+  void setGeneralHeaders() {
+    headers["Connection"] = "close";
+    headers["Server"] = "WIP/1.0.0";
+  }
+
+  void setAllowHeader() {
+    if (statusCode == 405) {
+      headers["Allow"] = "GET, HEAD, PUT, POST";
+    }
+  }
+
   void setBody(const std::string &MIMEtype,const std::string &body) {
     rawBody = body;
-    headers["Connection"] = "close";
     headers["Content-Type"] = MIMEtype;
     headers["Content-Length"] = std::to_string(rawBody.size());
-    headers["Server"] = "WIP/1.0.0";
   }
 
   void concatResponse() {
@@ -119,6 +128,9 @@ struct response {
       //Serverside warning
       std::cout << "File retrieval exited. Make sure the file has a valid extension suffix.\n";
     }
+
+
+    setGeneralHeaders();
 
     if (statusCode == 200) {
       setBody(getContentType(mType),tempBodyHolder);
