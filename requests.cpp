@@ -43,6 +43,17 @@ void parseStartLine(std::string &startLine, request &request) {
   } 
 }
 
+std::string ignoreLWS(const std::string &temp) {
+
+  for (int i = 0; i < temp.size();i++) {
+    if (temp[i] != ' ') {
+      return temp.substr(i,temp.size()-i);
+    }
+  }
+
+  return "";
+}
+
 void spliceHeaders(std::string &headerLine, request &request) {
   std::stringstream rawString(headerLine); //copy constructor in usage
   std::string temp;
@@ -53,7 +64,7 @@ void spliceHeaders(std::string &headerLine, request &request) {
 
     if (counter == 1) {
       if (temp[0] == ' ') {
-        buffer[counter] = temp.substr(1,temp.size()-1);
+        buffer[counter] = ignoreLWS(temp);
       } else {
         buffer[counter] = temp;
       }
