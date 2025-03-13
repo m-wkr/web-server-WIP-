@@ -68,6 +68,7 @@ struct response {
 
   void setBody(const std::string &MIMEtype,const std::string &body) {
     rawBody = body;
+    headers["Connection"] = "close";
     headers["Content-Type"] = MIMEtype;
     headers["Content-Length"] = std::to_string(rawBody.size());
     headers["Server"] = "WIP/1.0.0";
