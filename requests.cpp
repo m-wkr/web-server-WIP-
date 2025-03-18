@@ -1,7 +1,12 @@
 #include <iostream>
 #include <sstream>
+#include <algorithm>
+#include <cctype>
 #include "requests.hpp"
 
+void turnHeaderToLowercase(std::string &header) {
+  std::transform(header.begin(),header.end(),header.begin(),[](unsigned char c) { return std::tolower(c); });
+}
 
 void parseStartLine(std::string &startLine, request &request) {
   std::stringstream rawString(startLine);
@@ -71,6 +76,7 @@ void spliceHeaders(std::string &headerLine, request &request) {
       counter = 0;
       request.headers.insert({buffer[0],buffer[1]});
     } else {
+      turnHeaderToLowercase(temp);
       buffer[counter] = temp;
       counter += 1;
     }
@@ -125,7 +131,7 @@ void requestParser(const char* &&buffer, request &currentRequest) {
   }
 
   //Debugging 
-  /*std::cout << currentRequest.method << "-" << currentRequest.requestTarget << '\n';
+  std::cout << currentRequest.method << "-" << currentRequest.requestTarget << '\n';
 
   std::map<std::string,std::string>::iterator i = currentRequest.headers.begin();
   while (i != currentRequest.headers.end()) {
@@ -133,6 +139,6 @@ void requestParser(const char* &&buffer, request &currentRequest) {
     i++;
   }
 
-  std::cout << rawBody;*/
+  std::cout << rawBody;
 
 }
