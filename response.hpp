@@ -93,7 +93,7 @@ struct response {
     }
 
 
-    if (headers["Content-Size"] == "0") {
+    if (headers["Content-Length"] == "0") {
       constructedMsg += "\r\n";
     } else {
       constructedMsg += "\r\n" + rawBody;
