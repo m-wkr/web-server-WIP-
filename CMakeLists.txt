@@ -5,3 +5,5 @@ add_library(requests STATIC requests.cpp)
 
 
 target_link_libraries(web_server requests)
+set_property(TARGET requests PROPERTY CXX_STANDARD 20)
+set_property(GLOBAL PROPERTY CXX_STANDARD_REQUIRED True)

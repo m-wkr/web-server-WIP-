@@ -9,7 +9,7 @@ class server {
   //function ptr file handlers
   std::map<std::string,void (*)(request &req, response &res)> pathHandler = {};
 
-  //Request holder
+  //Request holder - NOTE: headers are all lowercase, so header access must be paid in mind to this fact
   request currentRequest;
   //Response holder
   response responseToBeSent;
