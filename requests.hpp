@@ -20,7 +20,7 @@ struct request {
   requestTypes method = HEAD;
   requestURIType URIType = ABS_PATH; //default assumption
   std::string requestTarget;
-  float version = 1.1;
+  int minorVersion = 1;
   std::map<std::string,std::string> headers;
   
   int errorCode = 200;

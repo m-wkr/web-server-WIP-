@@ -50,7 +50,7 @@ void parseStartLine(std::string &startLine, request &request) {
     } else if (i == 2) {
 
       if (temp == "HTTP/1.0\r") {
-        request.version = 1.0;
+        request.minorVersion = 0;
       } else if (temp != "HTTP/1.1\r") {
         //handle error
         request.errorCode = 403;
@@ -147,12 +147,13 @@ void requestParser(const char* &&buffer, request &currentRequest) {
     }
   }
 
-  if (!currentRequest.headers.contains("host")) {
+
+  if (!currentRequest.headers.contains("host") && currentRequest.minorVersion == 1) {
     currentRequest.errorCode = 400;
   }
 
   //Debugging 
-  std::cout << currentRequest.method << "-" << currentRequest.requestTarget << "-" << currentRequest.URIType << "-" << currentRequest.version << '\n';
+  /*std::cout << currentRequest.method << "-" << currentRequest.requestTarget << "-" << currentRequest.URIType << "-" << currentRequest.version << '\n';
 
   std::map<std::string,std::string>::iterator i = currentRequest.headers.begin();
   while (i != currentRequest.headers.end()) {
@@ -160,6 +161,6 @@ void requestParser(const char* &&buffer, request &currentRequest) {
     i++;
   }
 
-  std::cout << rawBody;
+  std::cout << rawBody;*/
 
 }
