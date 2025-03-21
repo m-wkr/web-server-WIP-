@@ -8,6 +8,19 @@ void turnHeaderToLowercase(std::string &header) {
   std::transform(header.begin(),header.end(),header.begin(),[](unsigned char c) { return std::tolower(c); });
 }
 
+requestURIType determineRequestURIForm(std::string &requestTarget) {
+
+  if (requestTarget == "*") {
+    return GENERAL;
+  } else if (requestTarget.length() > 4 && requestTarget.substr(0,4) == "http") {
+    return ABS_URI;
+  } else if (requestTarget == "authority") {
+    return AUTHORITY;
+  } else {
+    return ABS_PATH;
+  }
+}
+
 void parseStartLine(std::string &startLine, request &request) {
   std::stringstream rawString(startLine);
   std::string temp;
@@ -32,9 +45,13 @@ void parseStartLine(std::string &startLine, request &request) {
     } else if (i == 1) {
 
       request.requestTarget = temp;
+      request.URIType = determineRequestURIForm(temp);
 
     } else if (i == 2) {
-      if (temp != "HTTP/1.1\r") {
+
+      if (temp == "HTTP/1.0\r") {
+        request.version = 1.0;
+      } else if (temp != "HTTP/1.1\r") {
         //handle error
         request.errorCode = 403;
       }
@@ -135,7 +152,7 @@ void requestParser(const char* &&buffer, request &currentRequest) {
   }
 
   //Debugging 
-  /*std::cout << currentRequest.method << "-" << currentRequest.requestTarget << '\n';
+  std::cout << currentRequest.method << "-" << currentRequest.requestTarget << "-" << currentRequest.URIType << "-" << currentRequest.version << '\n';
 
   std::map<std::string,std::string>::iterator i = currentRequest.headers.begin();
   while (i != currentRequest.headers.end()) {
@@ -143,6 +160,6 @@ void requestParser(const char* &&buffer, request &currentRequest) {
     i++;
   }
 
-  std::cout << rawBody;*/
+  std::cout << rawBody;
 
 }
