@@ -6,6 +6,8 @@
 
 
 class server {
+  std::string hostName;
+  std::map<std::string,bool> hostAliases = {{"localhost",true},{"127.0.0.1",true}};
   //function ptr file handlers
   std::map<std::string,void (*)(request &req, response &res)> pathHandler = {};
 
@@ -18,6 +20,32 @@ class server {
 
 
   public:
+  server(std::string &&nHostName) {
+    hostName = nHostName;
+    hostAliases.insert({nHostName,true});
+  }
+
+  std::string getHostName() {
+    return hostName;
+  }
+
+  //not working
+  bool validateHost() {
+    //
+    if (currentRequest.URIType == ABS_URI) {
+
+      if (currentRequest.requestTarget.length() - 7 < hostName.length()) {
+        return false;
+      } 
+
+      return hostAliases.count(currentRequest.headers["host"]) != 0;
+
+    }
+
+    //Check if host name matches 
+    return hostAliases.count(currentRequest.headers["host"]) != 0;
+  }
+
   void manageConnection(const std::string &path, void (*fPtr)(request &req,response &res)) {
     pathHandler[path] = fPtr;
   }
@@ -32,6 +60,10 @@ class server {
     //Obtain request info
     recv(clientSocketFD,buffer,sizeof(buffer),0);
     requestParser(buffer,currentRequest);
+
+    if (!validateHost()) {
+      currentRequest.errorCode = 400;
+    }
   
     //expect body to be set by users
     try {

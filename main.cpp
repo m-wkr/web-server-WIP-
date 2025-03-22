@@ -15,7 +15,8 @@ void (*func)(request &req, response &res) = randomHTML;
 
 
 int main() {
-  server app;
+  server app = server("testing");
+  
 
   app.manageConnection("/",func);
 

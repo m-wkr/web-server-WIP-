@@ -12,13 +12,27 @@ requestURIType determineRequestURIForm(std::string &requestTarget) {
 
   if (requestTarget == "*") {
     return GENERAL;
-  } else if (requestTarget.length() > 4 && requestTarget.substr(0,4) == "http") {
+  } else if (requestTarget.length() > 7 && requestTarget.substr(0,7) == "http://") {
     return ABS_URI;
   } else if (requestTarget == "authority") {
     return AUTHORITY;
   } else {
     return ABS_PATH;
   }
+}
+
+void separateResourceFromHostName(std::string &ABSURI, request &request) {
+  ABSURI = ABSURI.substr(7);
+
+  for (int i = 0; i < ABSURI.length(); i++) {
+    if (ABSURI[i] == '/') {
+      request.headers["host"] = ABSURI.substr(0,i);
+      request.requestTarget = ABSURI.substr(i);
+      return;
+    }
+  }
+
+  request.errorCode = 400;
 }
 
 void parseStartLine(std::string &startLine, request &request) {
@@ -44,8 +58,14 @@ void parseStartLine(std::string &startLine, request &request) {
 
     } else if (i == 1) {
 
-      request.requestTarget = temp;
+      //request.requestTarget = temp;
       request.URIType = determineRequestURIForm(temp);
+
+      if (request.URIType == ABS_URI) {
+        separateResourceFromHostName(temp,request);
+      } else {
+        request.requestTarget = temp;
+      }
 
     } else if (i == 2) {
 
@@ -91,7 +111,13 @@ void spliceHeaders(std::string &headerLine, request &request) {
         buffer[counter] = temp;
       }
       counter = 0;
-      request.headers.insert({buffer[0],buffer[1]});
+
+      if (request.headers.contains("host") && buffer[0] == "host" && request.URIType != ABS_URI) {
+        request.errorCode = 400;
+      } else if (request.URIType != ABS_URI && buffer[0] == "host"){
+        request.headers.insert({buffer[0],buffer[1].substr(0,buffer[1].length()-1)});
+      } 
+      
     } else {
       turnHeaderToLowercase(temp);
       buffer[counter] = temp;
