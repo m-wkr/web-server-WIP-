@@ -9,13 +9,10 @@
 
 struct response {
   std::string statusCodeStr = "HTTP/1.1 ";
-
   int statusCode = 200;
 
+  std::map<std::string,std::string> headers = {};
   std::string rawBody = "";
-
-  std::map<std::string,std::string> headers = {
-  };
 
   void addStatusCode(const int &value) {
 
@@ -54,26 +51,6 @@ struct response {
       case (404):
         statusCodeStr += "404 Not Found\r\n";
         break;
-    }
-  }
-
-  void addDateHeader() {
-    time_t timestamp = std::time(NULL);
-    struct tm datetime = *gmtime(&timestamp);
-    char dateString[50];
-    std::strftime(dateString,50,"%a, %e %b %Y %H:%M:%S GMT",&datetime);
-
-    headers["Date"] = dateString;
-  }
-
-  void setGeneralHeaders() {
-    headers["Connection"] = "close";
-    headers["Server"] = "WIP/1.0.0";
-  }
-
-  void setAllowHeader() {
-    if (statusCode == 405) {
-      headers["Allow"] = "GET, HEAD, PUT, POST";
     }
   }
 
@@ -130,11 +107,15 @@ struct response {
     }
 
 
-    setGeneralHeaders();
-
     if (statusCode == 200) {
       setBody(getContentType(mType),tempBodyHolder);
     } 
+  }
+
+  void addHeaders() {
+    addDateHeader();
+    setGeneralHeaders();
+    setAllowHeader();
   }
 
   std::string getMsg() {
@@ -143,4 +124,24 @@ struct response {
 
   private:
   std::string constructedMsg;
+
+  void addDateHeader() {
+    time_t timestamp = std::time(NULL);
+    struct tm datetime = *gmtime(&timestamp);
+    char dateString[50];
+    std::strftime(dateString,50,"%a, %e %b %Y %H:%M:%S GMT",&datetime);
+
+    headers["Date"] = dateString;
+  }
+
+  void setGeneralHeaders() {
+    headers["Connection"] = "close";
+    headers["Server"] = "WIP/1.0.0";
+  }
+
+  void setAllowHeader() {
+    if (statusCode == 405) {
+      headers["Allow"] = "GET, HEAD, PUT, POST";
+    }
+  }
 };

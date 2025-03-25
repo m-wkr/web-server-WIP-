@@ -19,17 +19,6 @@ class server {
   socketWrapper serverSocket;
 
 
-  public:
-  server(std::string &&nHostName) {
-    hostName = nHostName;
-    hostAliases.insert({nHostName,true});
-  }
-
-  std::string getHostName() {
-    return hostName;
-  }
-
-  //not working
   bool validateHost() {
     //
     if (currentRequest.URIType == ABS_URI) {
@@ -46,20 +35,7 @@ class server {
     return hostAliases.count(currentRequest.headers["host"]) != 0;
   }
 
-  void manageConnection(const std::string &path, void (*fPtr)(request &req,response &res)) {
-    pathHandler[path] = fPtr;
-  }
-
-  void startListening() {
-    listen(serverSocket.getFD(),5);
-
-    int clientSocketFD = accept(serverSocket.getFD(),nullptr,nullptr);
-
-    char buffer[2048];
-
-    //Obtain request info
-    recv(clientSocketFD,buffer,sizeof(buffer),0);
-    requestParser(buffer,currentRequest);
+  void processRequest() {
 
     if (!validateHost()) {
       currentRequest.errorCode = 400;
@@ -76,13 +52,34 @@ class server {
     }
 
     responseToBeSent.addStatusCode(currentRequest.errorCode);
-
-
-    //2. Construct resource & send it
-    responseToBeSent.addDateHeader();
-    responseToBeSent.setGeneralHeaders();
-    responseToBeSent.setAllowHeader();
+    responseToBeSent.addHeaders();
     responseToBeSent.concatResponse();
+  }
+
+  public:
+  server(std::string &&nHostName) {
+    hostName = nHostName;
+    hostAliases.insert({nHostName,true});
+  }
+
+
+  void manageConnection(const std::string &path, void (*fPtr)(request &req,response &res)) {
+    pathHandler[path] = fPtr;
+  }
+
+  void startListening() {
+    listen(serverSocket.getFD(),5);
+
+    int clientSocketFD = accept(serverSocket.getFD(),nullptr,nullptr);
+
+    char buffer[2048];
+
+    //Obtain request info
+    recv(clientSocketFD,buffer,sizeof(buffer),0);
+    requestParser(buffer,currentRequest);
+
+    processRequest();
+    
     std::string responseMsg = responseToBeSent.getMsg();
 
     send(clientSocketFD,responseMsg.c_str(),responseMsg.size(),0);
