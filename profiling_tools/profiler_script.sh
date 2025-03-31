@@ -1,8 +1,8 @@
 #!/bin/bash
-
-perf record -g -F 99 ../build/web_server
+cd build
+perf record -g -F max ./web_server
 perf script > out.perf
 
-./stackcollapse-perf.pl out.perf > out.folded
-./flamegraph.pl out.folded > kernel.svg
+../profiling_tools/stackcollapse-perf.pl out.perf > out.folded
+../profiling_tools/flamegraph.pl out.folded > kernel.svg
 firefox kernel.svg 
