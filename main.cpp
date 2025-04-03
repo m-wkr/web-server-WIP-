@@ -16,11 +16,10 @@ void (*func)(request &req, response &res) = randomHTML;
 
 int main() {
   server app = server("testing");
-  
 
-  app.manageConnection("/",func);
+  app.get("/",func);
 
-  app.manageConnection("/info",func);
+  app.get("/info",func);
 
   app.startListening();
 

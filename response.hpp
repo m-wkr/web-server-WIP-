@@ -42,6 +42,9 @@ struct response {
       case (500):
         statusCodeStr += "500 Internal Server Error\r\n";
         break;
+      case (501):
+        statusCodeStr += "501 Not Implemented\r\n";
+        break;
     }
   }
 

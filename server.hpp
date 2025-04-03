@@ -9,7 +9,10 @@ class server {
   std::string hostName;
   std::map<std::string,bool> hostAliases = {{"localhost",true},{"127.0.0.1",true}};
   //function ptr file handlers
-  std::map<std::string,void (*)(request &req, response &res)> pathHandler = {};
+  //std::map<std::string,void (*)(request &req, response &res)> pathHandler = {};
+
+  typedef void (*resourceFunction)(request &req, response &res);
+  std::map<std::string,std::map<requestTypes,resourceFunction>> pathHandler = {};
 
   //Request holder - NOTE: headers are all lowercase, so header access must be paid in mind to this fact
   request currentRequest;
@@ -17,6 +20,39 @@ class server {
   response responseToBeSent;
   //Socket holder
   socketWrapper serverSocket;
+
+  void checkIfMethodIsAllowed(requestTypes &currentReqType) {
+    if (pathHandler[currentRequest.requestTarget].count(currentReqType)) {
+      pathHandler[currentRequest.requestTarget][currentReqType](currentRequest,responseToBeSent);
+    } else {
+      currentRequest.errorCode = 405;
+    }
+  }
+
+  void delegateResourceByPath() {
+    // Check resource is registered
+    if (pathHandler.count(currentRequest.requestTarget)) {
+
+      requestTypes simplifiedReqType = GET;
+
+      switch (currentRequest.method) {
+        case GET:
+        case HEAD:
+          break;
+        case PUT:
+          simplifiedReqType = PUT;
+          break;
+        case POST:
+          simplifiedReqType = POST;
+          break;
+      }
+
+      checkIfMethodIsAllowed(simplifiedReqType);
+
+    } else {
+      currentRequest.errorCode = 404;
+    }
+  }
 
 
   public:
@@ -46,8 +82,10 @@ class server {
     return hostAliases.count(currentRequest.headers["host"]) != 0;
   }
 
-  void manageConnection(const std::string &path, void (*fPtr)(request &req,response &res)) {
-    pathHandler[path] = fPtr;
+  //renamed to get from manageConnection
+  void get(const std::string &path, void (*fPtr)(request &req,response &res)) {
+    pathHandler[path][GET] = fPtr;
+    //pathHandler[path][HEAD] = fPtr; // seems redundant, look for opti
   }
 
   void startListening() {
@@ -66,14 +104,8 @@ class server {
     }
   
     //expect body to be set by users
-    try {
-      if (currentRequest.errorCode == 200) {
-        pathHandler.at(currentRequest.requestTarget)(currentRequest,responseToBeSent);
-      }
-    }
-    catch (...) {
-      currentRequest.errorCode = 404;
-    }
+    delegateResourceByPath();
+
 
     responseToBeSent.addStatusCode(currentRequest.errorCode);
 

@@ -53,7 +53,7 @@ void parseStartLine(std::string &startLine, request &request) {
       } else if (temp == "POST") {
         request.method = POST;
       } else {
-        request.errorCode = 405;
+        request.errorCode = 501;
       }
 
     } else if (i == 1) {
