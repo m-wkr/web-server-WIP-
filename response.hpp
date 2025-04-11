@@ -132,9 +132,6 @@ struct response {
       std::cout << "File retrieval exited. Make sure the file has a valid extension suffix.\n";
     }
 
-
-    setGeneralHeaders();
-
     if (statusCode == 200) {
       setBody(getContentType(mType),tempBodyHolder);
     } 
