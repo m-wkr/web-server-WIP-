@@ -80,9 +80,9 @@ struct response {
     }
   }
 
-  void setBody(const std::string &MIMEtype,const std::string &body) {
+  void setBody(const MIME MIMEtype,const std::string &body) {
     rawBody = body;
-    headers["Content-Type"] = MIMEtype;
+    headers["Content-Type"] = getContentType(MIMEtype);
     headers["Content-Length"] = std::to_string(rawBody.size());
   }
 
@@ -133,7 +133,7 @@ struct response {
     }
 
     if (statusCode == 200) {
-      setBody(getContentType(mType),tempBodyHolder);
+      setBody(mType,tempBodyHolder);
     } 
   }
 
