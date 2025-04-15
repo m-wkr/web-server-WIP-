@@ -22,7 +22,9 @@ class server {
   socketWrapper serverSocket;
 
   void checkIfMethodIsAllowed(requestTypes &currentReqType) {
-    if (pathHandler[currentRequest.requestTarget].count(currentReqType)) {
+    if (currentRequest.URIType == GENERAL && currentRequest.requestTarget == "*"){
+      return;
+    } else if (pathHandler[currentRequest.requestTarget].count(currentReqType)) {
       pathHandler[currentRequest.requestTarget][currentReqType](currentRequest,responseToBeSent);
     } else {
       currentRequest.errorCode = 405;
@@ -102,6 +104,11 @@ class server {
   std::string concatMethods() {
     std::map<requestTypes,resourceFunction> &currentResource = pathHandler[currentRequest.requestTarget];
 
+
+    if (currentRequest.URIType == GENERAL) {
+      std::map<requestTypes,resourceFunction> &currentResource = pathHandler["*"];
+    } 
+
     std::string availableMethods = "";
 
     for (std::map<requestTypes,resourceFunction>::iterator iter = currentResource.begin(); iter != currentResource.end(); iter++) {
@@ -118,10 +125,12 @@ class server {
   //renamed to get from manageConnection - handles GET & HEAD
   void get(const std::string &path, void (*fPtr)(request &req,response &res)) {
     pathHandler[path][GET] = fPtr;
+    pathHandler["*"][GET] = nullptr;
   }
 
   void options(const std::string &path, void (*fPtr)(request &req,response &res)) {
-    pathHandler[path][OPTIONS] = fPtr;    
+    pathHandler[path][OPTIONS] = fPtr;  
+    pathHandler["*"][OPTIONS] = nullptr;
   }
 
   void startListening() {
