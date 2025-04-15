@@ -3,6 +3,7 @@
 
 //WIP TO BE EXPANDED
 enum requestTypes {
+  OPTIONS,
   GET,
   HEAD,
   PUT,

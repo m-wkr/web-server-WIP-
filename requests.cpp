@@ -43,8 +43,9 @@ void parseStartLine(std::string &startLine, request &request) {
 
   while (getline(rawString,temp,' ')) {
     if (i == 0) {
-
-      if (temp == "GET") {
+      if (temp == "OPTIONS") {
+        request.method = OPTIONS;
+      } else if (temp == "GET") {
         request.method = GET;
       } else if (temp == "HEAD") {
         request.method = HEAD;

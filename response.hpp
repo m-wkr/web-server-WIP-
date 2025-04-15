@@ -74,10 +74,8 @@ struct response {
     headers["Server"] = "WIP/1.0.0";
   }
 
-  void setAllowHeader() {
-    if (statusCode == 405) {
-      headers["Allow"] = "GET, HEAD, PUT, POST";
-    }
+  void setAllowHeader(const std::string allowedMethods) {
+    headers["Allow"] = allowedMethods;    
   }
 
   void setBody(const MIME MIMEtype,const std::string &body) {

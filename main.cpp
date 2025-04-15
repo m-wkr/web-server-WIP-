@@ -22,6 +22,8 @@ int main() {
 
   app.get("/info",func);
 
+  app.options("/",func);
+
   app.startListening();
 
   return 0;

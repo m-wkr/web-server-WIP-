@@ -45,6 +45,9 @@ class server {
         case POST:
           simplifiedReqType = POST;
           break;
+        case OPTIONS:
+          simplifiedReqType = OPTIONS;
+          break;
       }
 
       checkIfMethodIsAllowed(simplifiedReqType);
@@ -82,10 +85,43 @@ class server {
     return hostAliases.count(currentRequest.headers["host"]) != 0;
   }
 
-  //renamed to get from manageConnection
+  std::string requestTypeToString(const requestTypes &rType) {
+    switch (rType) {
+      case OPTIONS:
+        return "OPTIONS";
+      case GET:
+      case HEAD:
+        return "GET, HEAD";
+      case PUT:
+        return "PUT";
+      case POST:
+        return "POST";
+    }
+  }
+
+  std::string concatMethods() {
+    std::map<requestTypes,resourceFunction> &currentResource = pathHandler[currentRequest.requestTarget];
+
+    std::string availableMethods = "";
+
+    for (std::map<requestTypes,resourceFunction>::iterator iter = currentResource.begin(); iter != currentResource.end(); iter++) {
+      availableMethods += requestTypeToString(iter->first);
+
+      if (iter->first != currentResource.rbegin()->first) {
+        availableMethods += ", ";
+      }
+    }
+
+    return availableMethods;
+  }
+
+  //renamed to get from manageConnection - handles GET & HEAD
   void get(const std::string &path, void (*fPtr)(request &req,response &res)) {
     pathHandler[path][GET] = fPtr;
-    //pathHandler[path][HEAD] = fPtr; // seems redundant, look for opti
+  }
+
+  void options(const std::string &path, void (*fPtr)(request &req,response &res)) {
+    pathHandler[path][OPTIONS] = fPtr;    
   }
 
   void startListening() {
@@ -113,7 +149,9 @@ class server {
     //2. Construct resource & send it
     responseToBeSent.addDateHeader();
     responseToBeSent.setGeneralHeaders();
-    responseToBeSent.setAllowHeader();
+    if (responseToBeSent.statusCode == 405 || currentRequest.method == OPTIONS) {
+      responseToBeSent.setAllowHeader(concatMethods());
+    }
     responseToBeSent.concatResponse();
     std::string responseMsg = responseToBeSent.getMsg();
 
