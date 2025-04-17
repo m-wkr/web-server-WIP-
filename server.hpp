@@ -122,16 +122,27 @@ class server {
     return availableMethods;
   }
 
+  void options(const std::string &path, void (*fPtr)(request &req,response &res)) {
+    pathHandler[path][OPTIONS] = fPtr;  
+    pathHandler["*"][OPTIONS] = nullptr;
+  }
+
   //renamed to get from manageConnection - handles GET & HEAD
   void get(const std::string &path, void (*fPtr)(request &req,response &res)) {
     pathHandler[path][GET] = fPtr;
     pathHandler["*"][GET] = nullptr;
   }
 
-  void options(const std::string &path, void (*fPtr)(request &req,response &res)) {
-    pathHandler[path][OPTIONS] = fPtr;  
-    pathHandler["*"][OPTIONS] = nullptr;
+  void put(const std::string &path, void (*fPtr)(request &req, response &res)) {
+    pathHandler[path][PUT] = fPtr;
+    pathHandler["*"][PUT] = nullptr;
   }
+
+  void post(const std::string &path, void (*fPtr)(request &req, response &res)) {
+    pathHandler[path][POST] = fPtr;
+    pathHandler["*"][POST] = nullptr;
+  }
+  
 
   void startListening() {
     listen(serverSocket.getFD(),5);
