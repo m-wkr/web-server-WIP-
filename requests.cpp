@@ -59,7 +59,6 @@ void parseStartLine(std::string &startLine, request &request) {
 
     } else if (i == 1) {
 
-      //request.requestTarget = temp;
       request.URIType = determineRequestURIForm(temp);
 
       if (request.URIType == ABS_URI) {

@@ -8,9 +8,8 @@
 class server {
   std::string hostName;
   std::map<std::string,bool> hostAliases = {{"localhost",true},{"127.0.0.1",true}};
-  //function ptr file handlers
-  //std::map<std::string,void (*)(request &req, response &res)> pathHandler = {};
 
+  //function ptr file handlers
   typedef void (*resourceFunction)(request &req, response &res);
   std::map<std::string,std::map<requestTypes,resourceFunction>> pathHandler = {};
 
@@ -70,9 +69,7 @@ class server {
     return hostName;
   }
 
-  //not working
   bool validateHost() {
-    //
     if (currentRequest.URIType == ABS_URI) {
 
       if (currentRequest.requestTarget.length() - 7 < hostName.length()) {
@@ -127,7 +124,7 @@ class server {
     pathHandler["*"][OPTIONS] = nullptr;
   }
 
-  //renamed to get from manageConnection - handles GET & HEAD
+  //handles GET & HEAD
   void get(const std::string &path, void (*fPtr)(request &req,response &res)) {
     pathHandler[path][GET] = fPtr;
     pathHandler["*"][GET] = nullptr;
