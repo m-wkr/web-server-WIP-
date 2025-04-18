@@ -119,25 +119,28 @@ class server {
     return availableMethods;
   }
 
-  void options(const std::string &path, void (*fPtr)(request &req,response &res)) {
+  /*void options(const std::string &path, void (*fPtr)(request &req,response &res)) {
     pathHandler[path][OPTIONS] = fPtr;  
     pathHandler["*"][OPTIONS] = nullptr;
-  }
+  }*/
 
   //handles GET & HEAD
   void get(const std::string &path, void (*fPtr)(request &req,response &res)) {
     pathHandler[path][GET] = fPtr;
     pathHandler["*"][GET] = nullptr;
+    pathHandler[path][OPTIONS] = fPtr;  
   }
 
   void put(const std::string &path, void (*fPtr)(request &req, response &res)) {
     pathHandler[path][PUT] = fPtr;
     pathHandler["*"][PUT] = nullptr;
+    pathHandler[path][OPTIONS] = fPtr;  
   }
 
   void post(const std::string &path, void (*fPtr)(request &req, response &res)) {
     pathHandler[path][POST] = fPtr;
     pathHandler["*"][POST] = nullptr;
+    pathHandler[path][OPTIONS] = fPtr;  
   }
   
 
