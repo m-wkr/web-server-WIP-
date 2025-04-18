@@ -6,8 +6,10 @@ enum requestTypes {
   OPTIONS,
   GET,
   HEAD,
+  POST,
   PUT,
-  POST
+  DELETE,
+  TRACE
 };
 
 enum requestURIType {

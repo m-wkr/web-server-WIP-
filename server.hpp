@@ -37,17 +37,23 @@ class server {
       requestTypes simplifiedReqType = GET;
 
       switch (currentRequest.method) {
+        case OPTIONS:
+          simplifiedReqType = OPTIONS;
+          break;
         case GET:
         case HEAD:
-          break;
-        case PUT:
-          simplifiedReqType = PUT;
           break;
         case POST:
           simplifiedReqType = POST;
           break;
-        case OPTIONS:
-          simplifiedReqType = OPTIONS;
+        case PUT:
+          simplifiedReqType = PUT;
+          break;
+        case DELETE:
+          simplifiedReqType = DELETE;
+          break;
+        case TRACE:
+          simplifiedReqType = TRACE;
           break;
       }
 
@@ -91,10 +97,14 @@ class server {
       case GET:
       case HEAD:
         return "GET, HEAD";
-      case PUT:
-        return "PUT";
       case POST:
         return "POST";
+      case PUT:
+        return "PUT";
+      case DELETE:
+        return "DELETE";
+      case TRACE:
+        return "TRACE";
     }
   }
 
@@ -119,15 +129,16 @@ class server {
     return availableMethods;
   }
 
-  /*void options(const std::string &path, void (*fPtr)(request &req,response &res)) {
-    pathHandler[path][OPTIONS] = fPtr;  
-    pathHandler["*"][OPTIONS] = nullptr;
-  }*/
-
   //handles GET & HEAD
   void get(const std::string &path, void (*fPtr)(request &req,response &res)) {
     pathHandler[path][GET] = fPtr;
     pathHandler["*"][GET] = nullptr;
+    pathHandler[path][OPTIONS] = fPtr;  
+  }
+
+  void post(const std::string &path, void (*fPtr)(request &req, response &res)) {
+    pathHandler[path][POST] = fPtr;
+    pathHandler["*"][POST] = nullptr;
     pathHandler[path][OPTIONS] = fPtr;  
   }
 
@@ -137,12 +148,11 @@ class server {
     pathHandler[path][OPTIONS] = fPtr;  
   }
 
-  void post(const std::string &path, void (*fPtr)(request &req, response &res)) {
-    pathHandler[path][POST] = fPtr;
-    pathHandler["*"][POST] = nullptr;
-    pathHandler[path][OPTIONS] = fPtr;  
+  void deleteSource(const std::string &path, void (*fPtr)(request &req, response &res)) {
+    pathHandler[path][DELETE] = fPtr;
+    pathHandler["*"][DELETE] = nullptr;
+    pathHandler[path][OPTIONS] = fPtr;
   }
-  
 
   void startListening() {
     listen(serverSocket.getFD(),5);
