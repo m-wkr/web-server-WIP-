@@ -25,6 +25,7 @@ class server {
       return;
     } else if (pathHandler[currentRequest.requestTarget].count(currentReqType)) {
       pathHandler[currentRequest.requestTarget][currentReqType](currentRequest,responseToBeSent);
+
     } else {
       currentRequest.errorCode = 405;
     }
@@ -136,22 +137,25 @@ class server {
     pathHandler[path][OPTIONS] = fPtr;  
   }
 
-  void post(const std::string &path, void (*fPtr)(request &req, response &res)) {
+  void post(const std::string &path, void (*fPtr)(request &req, response &res), int statusCode = 200) {
     pathHandler[path][POST] = fPtr;
     pathHandler["*"][POST] = nullptr;
     pathHandler[path][OPTIONS] = fPtr;  
+    currentRequest.errorCode = statusCode;
   }
 
-  void put(const std::string &path, void (*fPtr)(request &req, response &res)) {
+  void put(const std::string &path, void (*fPtr)(request &req, response &res), int statusCode = 201) {
     pathHandler[path][PUT] = fPtr;
     pathHandler["*"][PUT] = nullptr;
     pathHandler[path][OPTIONS] = fPtr;  
+    currentRequest.errorCode = statusCode;
   }
 
-  void deleteSource(const std::string &path, void (*fPtr)(request &req, response &res)) {
+  void deleteSource(const std::string &path, void (*fPtr)(request &req, response &res), int statusCode) {
     pathHandler[path][DELETE] = fPtr;
     pathHandler["*"][DELETE] = nullptr;
     pathHandler[path][OPTIONS] = fPtr;
+    currentRequest.errorCode = statusCode;
   }
 
   void startListening() {

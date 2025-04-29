@@ -22,7 +22,7 @@ int main() {
 
   app.get("/info",func);
 
-  app.post("/info",func);
+  app.post("/info",func,200);
 
   app.startListening();
 
