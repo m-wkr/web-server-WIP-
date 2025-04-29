@@ -5,6 +5,7 @@ enum MIME {
   TEXT_HTML,
   TEXT_CSS,
   TEXT_JS,
+  MESSAGE_HTTP,
   ERR,
 };
 
@@ -38,5 +39,7 @@ std::string getContentType(const MIME &MIMEtype) {
     return "text/css";
   } else if (TEXT_JS) {
     return "text/javascript";
+  } else if (MESSAGE_HTTP) {
+    return "message/http";
   }
 }

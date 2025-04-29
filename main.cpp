@@ -24,6 +24,8 @@ int main() {
 
   app.post("/info",func,200);
 
+  app.enableTrace("/");
+
   app.startListening();
 
   return 0;

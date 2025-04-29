@@ -53,6 +53,8 @@ void parseStartLine(std::string &startLine, request &request) {
         request.method = PUT;
       } else if (temp == "POST") {
         request.method = POST;
+      } else if (temp == "TRACE") {
+        request.method = TRACE;
       } else {
         request.errorCode = 501;
       }
@@ -131,8 +133,8 @@ void spliceHeaders(std::string &headerLine, request &request) {
 
 
 
-void requestParser(const char* &&buffer, request &currentRequest) {
-  std::stringstream rawString(buffer);
+void requestParser(request &currentRequest) {
+  std::stringstream rawString(currentRequest.msgBuffer);
   std::string temp;
 
   //body

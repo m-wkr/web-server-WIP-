@@ -20,6 +20,7 @@ enum requestURIType {
 };
   
 struct request {
+  char msgBuffer[2048];
   requestTypes method = HEAD;
   requestURIType URIType = ABS_PATH; //default assumption
   std::string requestTarget;
@@ -47,4 +48,4 @@ struct request {
 };
 
 
-void requestParser(const char* &&buffer, request &currentRequest);
+void requestParser(request &currentRequest);

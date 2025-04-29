@@ -3,7 +3,11 @@
 #include "response.hpp"
 #include <iostream>
 
-
+namespace helpers {
+  void trace(request &req, response &res) {
+    res.setBody(MESSAGE_HTTP,req.msgBuffer);
+  }
+}
 
 class server {
   std::string hostName;
@@ -158,16 +162,20 @@ class server {
     currentRequest.errorCode = statusCode;
   }
 
+  void enableTrace(const std::string &path) {
+    pathHandler[path][TRACE] = helpers::trace;
+    pathHandler["*"][TRACE] = nullptr;
+    pathHandler[path][OPTIONS] = helpers::trace;
+  }
+
   void startListening() {
     listen(serverSocket.getFD(),5);
 
     int clientSocketFD = accept(serverSocket.getFD(),nullptr,nullptr);
 
-    char buffer[2048];
-
     //Obtain request info
-    recv(clientSocketFD,buffer,sizeof(buffer),0);
-    requestParser(buffer,currentRequest);
+    recv(clientSocketFD,currentRequest.msgBuffer,sizeof(currentRequest.msgBuffer),0);
+    requestParser(currentRequest);
 
     if (!validateHost()) {
       currentRequest.errorCode = 400;
