@@ -2,6 +2,7 @@
 #include "socketWrapper.hpp"
 #include "response.hpp"
 #include <iostream>
+#include <unordered_map>
 
 namespace helpers {
   void trace(request &req, response &res) {
@@ -15,7 +16,7 @@ class server {
 
   //function ptr file handlers
   typedef void (*resourceFunction)(request &req, response &res);
-  std::map<std::string,std::map<requestTypes,resourceFunction>> pathHandler = {};
+  std::unordered_map<std::string,std::unordered_map<requestTypes,resourceFunction>> pathHandler = {};
 
   //Request holder - NOTE: headers are all lowercase, so header access must be paid in mind to this fact
   request currentRequest;
@@ -117,21 +118,24 @@ class server {
   }
 
   std::string concatMethods() {
-    std::map<requestTypes,resourceFunction> &currentResource = pathHandler[currentRequest.requestTarget];
+    std::unordered_map<requestTypes,resourceFunction> &currentResource = pathHandler[currentRequest.requestTarget];
 
 
     if (currentRequest.URIType == GENERAL) {
-      std::map<requestTypes,resourceFunction> &currentResource = pathHandler["*"];
+      std::unordered_map<requestTypes,resourceFunction> &currentResource = pathHandler["*"];
     } 
 
     std::string availableMethods = "";
 
-    for (std::map<requestTypes,resourceFunction>::iterator iter = currentResource.begin(); iter != currentResource.end(); iter++) {
+    int counter = 0;
+    for (std::unordered_map<requestTypes,resourceFunction>::iterator iter = currentResource.begin(); iter != currentResource.end(); iter++) {
       availableMethods += requestTypeToString(iter->first);
 
-      if (iter->first != currentResource.rbegin()->first) {
+      if (counter + 1 < currentResource.size()) {
         availableMethods += ", ";
       }
+
+      counter++;
     }
 
     return availableMethods;
