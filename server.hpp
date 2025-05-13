@@ -24,12 +24,18 @@ class server {
   //Socket holder
   socketWrapper serverSocket;
 
-  void checkIfMethodIsAllowed(requestTypes &currentReqType) {
+
+  void handleOptions() {
     if (currentRequest.URIType == GENERAL && currentRequest.requestTarget == "*"){
       return;
-    } else if (pathHandler[currentRequest.requestTarget].count(currentReqType)) {
-      pathHandler[currentRequest.requestTarget][currentReqType](currentRequest,responseToBeSent);
+    } else if (!pathHandler[currentRequest.requestTarget].count(OPTIONS)) {
+      currentRequest.errorCode = 405;
+    }
+  }
 
+  void genericMethodHandler(const requestTypes &&currentReqType) {
+    if (pathHandler[currentRequest.requestTarget].count(currentReqType)) {
+      pathHandler[currentRequest.requestTarget][currentReqType](currentRequest,responseToBeSent);
     } else {
       currentRequest.errorCode = 405;
     }
@@ -39,30 +45,27 @@ class server {
     // Check resource is registered
     if (pathHandler.count(currentRequest.requestTarget)) {
 
-      requestTypes simplifiedReqType = GET;
-
       switch (currentRequest.method) {
         case OPTIONS:
-          simplifiedReqType = OPTIONS;
+          handleOptions();
           break;
         case GET:
         case HEAD:
+          genericMethodHandler(GET);
           break;
         case POST:
-          simplifiedReqType = POST;
+          genericMethodHandler(POST);
           break;
         case PUT:
-          simplifiedReqType = PUT;
+          genericMethodHandler(PUT);
           break;
         case DELETE:
-          simplifiedReqType = DELETE;
+          genericMethodHandler(DELETE);
           break;
         case TRACE:
-          simplifiedReqType = TRACE;
+          genericMethodHandler(TRACE); 
           break;
       }
-
-      checkIfMethodIsAllowed(simplifiedReqType);
 
     } else {
       currentRequest.errorCode = 404;
@@ -138,34 +141,34 @@ class server {
   void get(const std::string &path, void (*fPtr)(request &req,response &res)) {
     pathHandler[path][GET] = fPtr;
     pathHandler["*"][GET] = nullptr;
-    pathHandler[path][OPTIONS] = fPtr;  
+    pathHandler[path][OPTIONS] = nullptr;  
   }
 
   void post(const std::string &path, void (*fPtr)(request &req, response &res), int statusCode = 200) {
     pathHandler[path][POST] = fPtr;
     pathHandler["*"][POST] = nullptr;
-    pathHandler[path][OPTIONS] = fPtr;  
+    pathHandler[path][OPTIONS] = nullptr;
     currentRequest.errorCode = statusCode;
   }
 
   void put(const std::string &path, void (*fPtr)(request &req, response &res), int statusCode = 201) {
     pathHandler[path][PUT] = fPtr;
     pathHandler["*"][PUT] = nullptr;
-    pathHandler[path][OPTIONS] = fPtr;  
+    pathHandler[path][OPTIONS] = nullptr;
     currentRequest.errorCode = statusCode;
   }
 
   void deleteSource(const std::string &path, void (*fPtr)(request &req, response &res), int statusCode) {
     pathHandler[path][DELETE] = fPtr;
     pathHandler["*"][DELETE] = nullptr;
-    pathHandler[path][OPTIONS] = fPtr;
+    pathHandler[path][OPTIONS] = nullptr;
     currentRequest.errorCode = statusCode;
   }
 
   void enableTrace(const std::string &path) {
     pathHandler[path][TRACE] = helpers::trace;
     pathHandler["*"][TRACE] = nullptr;
-    pathHandler[path][OPTIONS] = helpers::trace;
+    pathHandler[path][OPTIONS] = nullptr;
   }
 
   void startListening() {
