@@ -3,6 +3,7 @@
 #include "response.hpp"
 #include <iostream>
 #include <unordered_map>
+#include <thread>
 
 namespace helpers {
   void trace(request &req, response &res) {
@@ -11,68 +12,156 @@ namespace helpers {
 }
 
 class server {
-  std::string hostName;
-  std::map<std::string,bool> hostAliases = {{"localhost",true},{"127.0.0.1",true}};
+  static std::string hostName;
+  static std::map<std::string,bool> hostAliases;
 
   //function ptr file handlers
   typedef void (*resourceFunction)(request &req, response &res);
-  std::unordered_map<std::string,std::unordered_map<requestTypes,resourceFunction>> pathHandler = {};
+  static std::unordered_map<std::string,std::unordered_map<requestTypes,resourceFunction>> pathHandler;
 
-  //Request holder - NOTE: headers are all lowercase, so header access must be paid in mind to this fact
-  request currentRequest;
-  //Response holder
-  response responseToBeSent;
+  //NOTE: headers are all lowercase, so header access must be paid in mind to this fact
+
   //Socket holder
   socketWrapper serverSocket;
 
+  class clientHandler {
+    request currentRequest;
+    response responseToBeSent;
 
-  void handleOptions() {
-    if (currentRequest.URIType == GENERAL && currentRequest.requestTarget == "*"){
-      return;
-    } else if (!pathHandler[currentRequest.requestTarget].count(OPTIONS)) {
-      currentRequest.errorCode = 405;
+    void handleOptions() {
+      if (currentRequest.URIType == GENERAL && currentRequest.requestTarget == "*"){
+        return;
+      } else if (!pathHandler[currentRequest.requestTarget].count(OPTIONS)) {
+        currentRequest.errorCode = 405;
+      }
     }
-  }
 
-  void genericMethodHandler(const requestTypes &&currentReqType) {
-    if (pathHandler[currentRequest.requestTarget].count(currentReqType)) {
-      pathHandler[currentRequest.requestTarget][currentReqType](currentRequest,responseToBeSent);
-    } else {
-      currentRequest.errorCode = 405;
+    void genericMethodHandler(const requestTypes &&currentReqType) {
+      if (pathHandler[currentRequest.requestTarget].count(currentReqType)) {
+        pathHandler[currentRequest.requestTarget][currentReqType](currentRequest,responseToBeSent);
+      } else {
+        currentRequest.errorCode = 405;
+      }
     }
-  }
+  
+    void delegateResourceByPath() {
+      // Check resource is registered
+      if (pathHandler.count(currentRequest.requestTarget)) {
+  
+        switch (currentRequest.method) {
+          case OPTIONS:
+            handleOptions();
+            break;
+          case GET:
+          case HEAD:
+            genericMethodHandler(GET);
+            break;
+          case POST:
+            genericMethodHandler(POST);
+            break;
+          case PUT:
+            genericMethodHandler(PUT);
+            break;
+          case DELETE:
+            genericMethodHandler(DELETE);
+            break;
+          case TRACE:
+            genericMethodHandler(TRACE); 
+            break;
+        }
+  
+      } else {
+        currentRequest.errorCode = 404;
+      }
+    }
 
-  void delegateResourceByPath() {
-    // Check resource is registered
-    if (pathHandler.count(currentRequest.requestTarget)) {
-
-      switch (currentRequest.method) {
+    std::string requestTypeToString(const requestTypes &rType) {
+      switch (rType) {
         case OPTIONS:
-          handleOptions();
-          break;
+          return "OPTIONS";
         case GET:
         case HEAD:
-          genericMethodHandler(GET);
-          break;
+          return "GET, HEAD";
         case POST:
-          genericMethodHandler(POST);
-          break;
+          return "POST";
         case PUT:
-          genericMethodHandler(PUT);
-          break;
+          return "PUT";
         case DELETE:
-          genericMethodHandler(DELETE);
-          break;
+          return "DELETE";
         case TRACE:
-          genericMethodHandler(TRACE); 
-          break;
+          return "TRACE";
       }
-
-    } else {
-      currentRequest.errorCode = 404;
     }
-  }
+  
+    std::string concatMethods() {
+      std::unordered_map<requestTypes,resourceFunction> &currentResource = pathHandler[currentRequest.requestTarget];
+  
+  
+      if (currentRequest.URIType == GENERAL) {
+        std::unordered_map<requestTypes,resourceFunction> &currentResource = pathHandler["*"];
+      } 
+  
+      std::string availableMethods = "";
+  
+      int counter = 0;
+      for (std::unordered_map<requestTypes,resourceFunction>::iterator iter = currentResource.begin(); iter != currentResource.end(); iter++) {
+        availableMethods += requestTypeToString(iter->first);
+  
+        if (counter + 1 < currentResource.size()) {
+          availableMethods += ", ";
+        }
+  
+        counter++;
+      }
+  
+      return availableMethods;
+    }
 
+    bool validateHost() {
+      if (currentRequest.URIType == ABS_URI) {
+  
+        if (currentRequest.requestTarget.length() - 7 < hostName.length()) {
+          return false;
+        } 
+  
+        return hostAliases.count(currentRequest.headers["host"]) != 0;
+  
+      }
+  
+      //Check if host name matches 
+      return hostAliases.count(currentRequest.headers["host"]) != 0;
+    }
+    public:
+    void handleClient(socketWrapper &serverSocket) {
+      int clientSocketFD = accept(serverSocket.getFD(),nullptr,nullptr);
+
+      //Obtain request info
+      recv(clientSocketFD,currentRequest.msgBuffer,sizeof(currentRequest.msgBuffer),0);
+      requestParser(currentRequest);
+  
+      if (!validateHost()) {
+        currentRequest.errorCode = 400;
+      }
+    
+      //expect body to be set by users
+      delegateResourceByPath();
+  
+  
+      responseToBeSent.addStatusCode(currentRequest.errorCode);
+  
+  
+      //2. Construct resource & send it
+      responseToBeSent.addDateHeader();
+      responseToBeSent.setGeneralHeaders();
+      if (responseToBeSent.statusCode == 405 || currentRequest.method == OPTIONS) {
+        responseToBeSent.setAllowHeader(concatMethods());
+      }
+      responseToBeSent.concatResponse();
+      std::string responseMsg = responseToBeSent.getMsg();
+  
+      send(clientSocketFD,responseMsg.c_str(),responseMsg.size(),0);
+    }
+  };
 
   public:
   server(std::string &&nHostName) {
@@ -82,63 +171,6 @@ class server {
 
   std::string getHostName() {
     return hostName;
-  }
-
-  bool validateHost() {
-    if (currentRequest.URIType == ABS_URI) {
-
-      if (currentRequest.requestTarget.length() - 7 < hostName.length()) {
-        return false;
-      } 
-
-      return hostAliases.count(currentRequest.headers["host"]) != 0;
-
-    }
-
-    //Check if host name matches 
-    return hostAliases.count(currentRequest.headers["host"]) != 0;
-  }
-
-  std::string requestTypeToString(const requestTypes &rType) {
-    switch (rType) {
-      case OPTIONS:
-        return "OPTIONS";
-      case GET:
-      case HEAD:
-        return "GET, HEAD";
-      case POST:
-        return "POST";
-      case PUT:
-        return "PUT";
-      case DELETE:
-        return "DELETE";
-      case TRACE:
-        return "TRACE";
-    }
-  }
-
-  std::string concatMethods() {
-    std::unordered_map<requestTypes,resourceFunction> &currentResource = pathHandler[currentRequest.requestTarget];
-
-
-    if (currentRequest.URIType == GENERAL) {
-      std::unordered_map<requestTypes,resourceFunction> &currentResource = pathHandler["*"];
-    } 
-
-    std::string availableMethods = "";
-
-    int counter = 0;
-    for (std::unordered_map<requestTypes,resourceFunction>::iterator iter = currentResource.begin(); iter != currentResource.end(); iter++) {
-      availableMethods += requestTypeToString(iter->first);
-
-      if (counter + 1 < currentResource.size()) {
-        availableMethods += ", ";
-      }
-
-      counter++;
-    }
-
-    return availableMethods;
   }
 
   //handles GET & HEAD
@@ -178,33 +210,19 @@ class server {
   void startListening() {
     listen(serverSocket.getFD(),5);
 
-    int clientSocketFD = accept(serverSocket.getFD(),nullptr,nullptr);
+    for (int i = 0; i < 3; i++) {
+      clientHandler temp = clientHandler();
 
-    //Obtain request info
-    recv(clientSocketFD,currentRequest.msgBuffer,sizeof(currentRequest.msgBuffer),0);
-    requestParser(currentRequest);
+      std::thread worker(&clientHandler::handleClient,clientHandler(),std::ref(serverSocket));
 
-    if (!validateHost()) {
-      currentRequest.errorCode = 400;
+      worker.join();
     }
-  
-    //expect body to be set by users
-    delegateResourceByPath();
 
-
-    responseToBeSent.addStatusCode(currentRequest.errorCode);
-
-
-    //2. Construct resource & send it
-    responseToBeSent.addDateHeader();
-    responseToBeSent.setGeneralHeaders();
-    if (responseToBeSent.statusCode == 405 || currentRequest.method == OPTIONS) {
-      responseToBeSent.setAllowHeader(concatMethods());
-    }
-    responseToBeSent.concatResponse();
-    std::string responseMsg = responseToBeSent.getMsg();
-
-    send(clientSocketFD,responseMsg.c_str(),responseMsg.size(),0);
     close(serverSocket.getFD());
   }
 };
+
+std::map<std::string,bool> server::hostAliases = {{"localhost",true},{"127.0.0.1",true}};
+std::string server::hostName = "";
+typedef void (*resourceFunction)(request &req, response &res);
+std::unordered_map<std::string,std::unordered_map<requestTypes,resourceFunction>> server::pathHandler = {};
