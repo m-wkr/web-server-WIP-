@@ -180,25 +180,22 @@ class server {
     pathHandler[path][OPTIONS] = nullptr;  
   }
 
-  void post(const std::string &path, void (*fPtr)(request &req, response &res), int statusCode = 200) {
+  void post(const std::string &path, void (*fPtr)(request &req, response &res)) {
     pathHandler[path][POST] = fPtr;
     pathHandler["*"][POST] = nullptr;
     pathHandler[path][OPTIONS] = nullptr;
-    currentRequest.errorCode = statusCode;
   }
 
-  void put(const std::string &path, void (*fPtr)(request &req, response &res), int statusCode = 201) {
+  void put(const std::string &path, void (*fPtr)(request &req, response &res)) {
     pathHandler[path][PUT] = fPtr;
     pathHandler["*"][PUT] = nullptr;
     pathHandler[path][OPTIONS] = nullptr;
-    currentRequest.errorCode = statusCode;
   }
 
-  void deleteSource(const std::string &path, void (*fPtr)(request &req, response &res), int statusCode) {
+  void deleteSource(const std::string &path, void (*fPtr)(request &req, response &res)) {
     pathHandler[path][DELETE] = fPtr;
     pathHandler["*"][DELETE] = nullptr;
     pathHandler[path][OPTIONS] = nullptr;
-    currentRequest.errorCode = statusCode;
   }
 
   void enableTrace(const std::string &path) {

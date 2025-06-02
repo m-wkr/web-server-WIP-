@@ -3,6 +3,7 @@
 void randomHTML(request &req, response &res) {
   std::string temp = "<!DOCTYPE html><head></head><body>Testing</body>";
 
+  res.statusCode = 200;
   res.retrieveFile("index.html");
   //res.setBody(TEXT_HTML,temp);
 
@@ -22,7 +23,7 @@ int main() {
 
   app.get("/info",func);
 
-  app.post("/info",func,200);
+  app.post("/info",func);
 
   app.enableTrace("/");
 
