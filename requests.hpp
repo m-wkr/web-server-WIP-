@@ -1,7 +1,7 @@
 #include <map>
 #include <string>
 
-enum requestTypes : uint8_t {
+enum requestTypes : u_int8_t {
   OPTIONS,
   GET,
   HEAD,
@@ -11,7 +11,7 @@ enum requestTypes : uint8_t {
   TRACE
 };
 
-enum requestURIType : uint8_t {
+enum requestURIType : u_int8_t {
   GENERAL,
   ABS_URI,
   ABS_PATH,

@@ -1,6 +1,6 @@
 #include <string>
 
-enum MIME : uint8_t{
+enum MIME : u_int8_t{
   TEXT_PLAIN,
   TEXT_HTML,
   TEXT_CSS,
