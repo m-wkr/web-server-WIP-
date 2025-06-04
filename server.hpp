@@ -5,11 +5,21 @@
 #include <unordered_map>
 #include <thread>
 
+std::atomic_bool listening = true;
+
 namespace helpers {
   void trace(request &req, response &res) {
     res.setBody(MESSAGE_HTTP,req.msgBuffer);
   }
+
+  void setListeningState() {
+    std::string test;
+    while (!(std::cin >> test)) {
+    }
+    listening = false;
+  };
 }
+
 
 class server {
   static std::string hostName;
@@ -207,7 +217,13 @@ class server {
   void startListening() {
     listen(serverSocket.getFD(),5);
 
-    for (int i = 0; i < 3; i++) {
+    std::cout << "Terminate server performance via any input followed by return\n";
+
+    std::thread serverUpdater(helpers::setListeningState);
+    serverUpdater.detach();
+
+
+    while (listening) {
       clientHandler temp = clientHandler();
 
       std::thread worker(&clientHandler::handleClient,clientHandler(),std::ref(serverSocket));
