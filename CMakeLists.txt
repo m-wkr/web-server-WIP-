@@ -5,7 +5,7 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED On)
 set(CMAKE_CXX_EXTENSIONS Off)
 
-add_executable(web_server main.cpp)
-add_library(requests STATIC requests.cpp)
+add_subdirectory(server_core)
 
-target_link_libraries(web_server requests)
+add_executable(web_server main.cpp)
+target_link_libraries(web_server PRIVATE server_core)
