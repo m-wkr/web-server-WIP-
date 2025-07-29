@@ -3,9 +3,9 @@
 #include "response.hpp"
 #include <iostream>
 #include <unordered_map>
-#include <thread>
+//#include <thread>
 
-std::atomic_bool listening = true;
+//std::atomic_bool listening = true;
 
 namespace helpers {
   void trace(request &req, response &res) {
@@ -16,7 +16,7 @@ namespace helpers {
     std::string test;
     while (!(std::cin >> test)) {
     }
-    listening = false;
+    //listening = false;
   };
 }
 
@@ -217,19 +217,24 @@ class server {
   void startListening() {
     listen(serverSocket.getFD(),5);
 
-    std::cout << "Terminate server performance via any input followed by return\n";
+    //std::cout << "Terminate server performance via any input followed by return\n";
 
-    std::thread serverUpdater(helpers::setListeningState);
-    serverUpdater.detach();
+    //std::thread serverUpdater(helpers::setListeningState);
+    //serverUpdater.detach();
 
-
-    while (listening) {
+    /*int test = 0;
+    while (test < 1) {
       clientHandler temp = clientHandler();
 
       std::thread worker(&clientHandler::handleClient,clientHandler(),std::ref(serverSocket));
 
       worker.join();
-    }
+
+      test++;
+    }*/
+
+    clientHandler temp = clientHandler();
+    temp.handleClient(std::ref(serverSocket));
 
     close(serverSocket.getFD());
   }
