@@ -232,9 +232,10 @@ class server {
 
       test++;
     }*/
-
-    clientHandler temp = clientHandler();
-    temp.handleClient(std::ref(serverSocket));
+    while (true) {
+      clientHandler temp = clientHandler();
+      temp.handleClient(std::ref(serverSocket));
+    }
 
     close(serverSocket.getFD());
   }

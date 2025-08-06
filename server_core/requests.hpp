@@ -19,7 +19,7 @@ enum requestURIType : u_int8_t {
 };
   
 struct request {
-  char msgBuffer[2048];
+  char msgBuffer[2048] = "GET / HTTP/1.1\r\nHost: localhost\r\nUser-Agent: curl/8.11.1\r\nAccept: */*\r\n\r\nhi\r\n";
   requestTypes method = HEAD;
   requestURIType URIType = ABS_PATH; //default assumption
   std::string requestTarget;
@@ -42,7 +42,7 @@ struct request {
     
   }
   
-  private:
+  //private:
   std::string rawBody;
 };
 
