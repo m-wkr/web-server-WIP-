@@ -2,8 +2,9 @@
 #include <sstream>
 #include <algorithm>
 #include <cctype>
-#include "requests.hpp"
+#include "requests.hpp" 
 
+//move to a reqHelper file
 void turnHeaderToLowercase(std::string &header) {
   std::transform(header.begin(),header.end(),header.begin(),[](unsigned char c) { return std::tolower(c); });
 }
@@ -98,6 +99,7 @@ std::string ignoreLWS(const std::string &temp) {
   return "";
 }
 
+//implement the host part in requestParser or in a separate file
 void spliceHeaders(std::string &headerLine, request &request) {
   std::stringstream rawString(headerLine); //copy constructor in usage
   std::string temp;

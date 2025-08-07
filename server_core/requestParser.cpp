@@ -4,12 +4,14 @@
 
 void parser(request &cRequest) {
   parseState stateTracker = REQLINE;
-  char stringBuffer[1024], secondaryBuffer[1024];
+
+  u_int8_t BUFFERSIZE = 1024;
+  char stringBuffer[BUFFERSIZE], secondaryBuffer[BUFFERSIZE];
   int stringBufferPtr = 0, secondaryBufferPtr = 0;
 
   int i = 0;
 
-  while (i + 1 < 1024) {
+  while (i + 1 < BUFFERSIZE) {
     if (cRequest.msgBuffer[i] == '\r' && cRequest.msgBuffer[i+1] == '\n') {
 
       switch (stateTracker) {
@@ -20,6 +22,7 @@ void parser(request &cRequest) {
           //error 
           break;
         case HEADERCONTENT:
+          turnHeaderToLowercase(stringBuffer,BUFFERSIZE);
           cRequest.headers[stringBuffer] = secondaryBuffer;
           stateTracker = BEGINBODY;
           stringBufferPtr = 0;

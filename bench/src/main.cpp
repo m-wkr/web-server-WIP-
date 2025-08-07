@@ -1,6 +1,7 @@
 #include <benchmark/benchmark.h>
 #include <iostream>
-#include "requestParser.hpp"
+//#include "requestParser.hpp"
+#include "requests.hpp"
 
 
 static request exampleReq;
@@ -12,7 +13,7 @@ static void BM_oldParser(benchmark::State& state) {
   }
 }
 
-BENCHMARK(BM_oldParser)->Repetitions(5);
+BENCHMARK(BM_oldParser)->Repetitions(50);
 
 static void BM_newParser(benchmark::State& state) {
 
@@ -21,6 +22,6 @@ static void BM_newParser(benchmark::State& state) {
   }
 }
 
-BENCHMARK(BM_newParser)->Repetitions(5);
+BENCHMARK(BM_newParser)->Repetitions(50);
 
 BENCHMARK_MAIN();

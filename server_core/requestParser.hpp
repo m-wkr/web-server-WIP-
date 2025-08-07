@@ -1,4 +1,5 @@
-#include "requests.hpp"
+#include "requestEnums.hpp"
+#include "requestHelper.hpp"
 
 enum parseState : u_int8_t {
   REQLINE,
