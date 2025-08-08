@@ -1,11 +1,12 @@
-#include "requestEnums.hpp"
 #include "requestHelper.hpp"
 
 enum parseState : u_int8_t {
-  REQLINE,
+  REQLINE_METHOD,
+  REQLINE_URI,
+  REQLINE_HTTP_VER,
   HEADER,
-  HEADERCONTENT,
-  BEGINBODY,
+  HEADER_CONTENT,
+  BEGIN_BODY,
   BODY
 };
 

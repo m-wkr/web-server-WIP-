@@ -1,9 +1,9 @@
 #include "requestParser.hpp"
 #include <iostream>
 
-
+//this needs to be tidied
 void parser(request &cRequest) {
-  parseState stateTracker = REQLINE;
+  parseState stateTracker = REQLINE_METHOD;
 
   u_int8_t BUFFERSIZE = 1024;
   char stringBuffer[BUFFERSIZE], secondaryBuffer[BUFFERSIZE];
@@ -15,20 +15,21 @@ void parser(request &cRequest) {
     if (cRequest.msgBuffer[i] == '\r' && cRequest.msgBuffer[i+1] == '\n') {
 
       switch (stateTracker) {
-        case REQLINE:
+        case REQLINE_HTTP_VER:
+          //set versioning (TODO)
           stateTracker = HEADER;
           break;
         case HEADER:
           //error 
           break;
-        case HEADERCONTENT:
+        case HEADER_CONTENT:
           turnHeaderToLowercase(stringBuffer,BUFFERSIZE);
           cRequest.headers[stringBuffer] = secondaryBuffer;
-          stateTracker = BEGINBODY;
+          stateTracker = BEGIN_BODY;
           stringBufferPtr = 0;
           secondaryBufferPtr = 0;
           break;
-        case BEGINBODY:
+        case BEGIN_BODY:
           stateTracker = BODY;
           break;
         case BODY:
@@ -39,17 +40,25 @@ void parser(request &cRequest) {
 
     } else {
 
-      if (stateTracker == BEGINBODY) {
+      if (stateTracker == BEGIN_BODY) {
         stateTracker = HEADER;
       }
 
       if (stateTracker == HEADER && cRequest.msgBuffer[i] == ':') {
-        stateTracker = HEADERCONTENT;
+        stateTracker = HEADER_CONTENT;
         i++;
         continue;
       }
 
-      if (stateTracker == HEADERCONTENT) {
+      if (cRequest.msgBuffer[i] == ' ') {
+        if (stateTracker == REQLINE_METHOD) {
+          strToReqMethod(cRequest,stringBuffer); //towrite
+        } else if (stateTracker == REQLINE_URI) {
+          determineURIType(cRequest,stringBuffer); //towrite
+        }
+      }
+
+      if (stateTracker == HEADER_CONTENT) {
         secondaryBuffer[secondaryBufferPtr] = cRequest.msgBuffer[i];
         secondaryBufferPtr++;
       } else {
