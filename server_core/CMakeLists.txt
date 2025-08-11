@@ -1,6 +1,11 @@
 add_library(
     server_core
     mimeTypes.hpp
+    requestEnums.hpp
+    requestHelper.hpp
+    requestHelper.cpp
+    requestParser.hpp
+    requestParser.cpp
     requests.cpp
     requests.hpp
     response.hpp

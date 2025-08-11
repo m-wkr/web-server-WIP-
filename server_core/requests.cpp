@@ -183,7 +183,7 @@ void requestParser(request &currentRequest) {
   }
 
   //Debugging 
-  /*std::cout << currentRequest.method << "-" << currentRequest.requestTarget << "-" << currentRequest.URIType << "-" << currentRequest.version << '\n';
+  /*std::cout << methodReqToStr(currentRequest.method) << "-" << currentRequest.requestTarget << "-" << currentRequest.URIType << "-" << currentRequest.minorVersion << '\n';
 
   std::map<std::string,std::string>::iterator i = currentRequest.headers.begin();
   while (i != currentRequest.headers.end()) {

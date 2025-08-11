@@ -1,6 +1,6 @@
 #include "server.hpp"
 
-void randomHTML(request &req, response &res) {
+/*void randomHTML(request &req, response &res) {
   std::string temp = "<!DOCTYPE html><head></head><body>Testing</body>";
 
   res.statusCode = 200;
@@ -10,14 +10,14 @@ void randomHTML(request &req, response &res) {
 };
 
 
-void (*func)(request &req, response &res) = randomHTML;
+void (*func)(request &req, response &res) = randomHTML;*/
 
 
 
 
 
 int main() {
-  server app = server("testing");
+  /*server app = server("testing");
 
   app.get("/",func);
 
@@ -27,7 +27,16 @@ int main() {
 
   app.enableTrace("/");
 
-  app.startListening();
+  app.startListening();*/
+
+  request exampleReq;
+
+  requestParser(exampleReq);
+
+  request eReq;
+
+  parser(eReq);
+
 
   return 0;
 }

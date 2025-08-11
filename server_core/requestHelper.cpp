@@ -1,5 +1,6 @@
 #include <string>
 #include <algorithm>
+#include <string.h>
 #include "requestHelper.hpp"
 
 void turnHeaderToLowercase(char (&header)[],u_int8_t size) {
@@ -12,22 +13,41 @@ void turnHeaderToLowercase(char (&header)[],u_int8_t size) {
 }
 
 void strToReqMethod(request &cRequest,const char (&strBuffer)[]) {
-  if (strBuffer == "OPTIONS") {
+  if (strcmp(strBuffer,"OPTIONS") == 0) {
     cRequest.method = OPTIONS;
-  } else if (strBuffer == "GET") {
+  } else if (strcmp(strBuffer,"GET") == 0) {
     cRequest.method = GET;
-  } else if (strBuffer == "HEAD") {
+  } else if (strcmp(strBuffer,"HEAD") == 0) {
     cRequest.method = HEAD;
-  } else if (strBuffer == "POST") {
+  } else if (strcmp(strBuffer,"POST") == 0) {
     cRequest.method = POST;
-  } else if (strBuffer == "PUT") {
+  } else if (strcmp(strBuffer,"PUT") == 0) {
     cRequest.method = PUT;
-  } else if (strBuffer == "DELETE") {
+  } else if (strcmp(strBuffer,"DELETE") == 0) {
     cRequest.method = DELETE;
-  } else if (strBuffer == "TRACE") {
+  } else if (strcmp(strBuffer,"TRACE") == 0) {
     cRequest.method = TRACE;
   } else {
     cRequest.errorCode = 501;
+  }
+}
+
+std::string methodReqToStr(requestTypes &rType) {
+  switch (rType) {
+    case OPTIONS:
+      return "OPTIONS";
+    case GET:
+      return "GET";
+    case HEAD:
+      return "HEAD";
+    case POST:
+      return "POST";
+    case PUT:
+      return "PUT";
+    case DELETE:
+      return "DELETE";
+    case TRACE:
+      return "TRACE";
   }
 }
 
