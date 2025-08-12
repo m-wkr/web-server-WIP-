@@ -3,12 +3,25 @@
 #include <string.h>
 #include "requestHelper.hpp"
 
-void turnHeaderToLowercase(char (&header)[],u_int8_t size) {
+void turnHeaderToLowercase(char (&header)[],int size) {
 
   for (int i = 0; i < size; i++) {
     if (header[i] == '\0') break;
 
     header[i] = std::tolower(header[i]);
+  }
+}
+
+void checkHost(request &cReq, char (&strBuffer)[], char (&sndBuffer)[]) {
+  if (cReq.headers.contains("host") && strcmp(strBuffer,"host") && cReq.URIType != ABS_URI) {
+    cReq.errorCode = 400;
+  } else if (cReq.URIType != ABS_URI && strcmp(strBuffer,"host")){
+    cReq.headers[strBuffer] = sndBuffer;
+  } 
+
+  
+  if (strcmp(strBuffer,"host")) {
+    cReq.headers[strBuffer] = sndBuffer;
   }
 }
 
@@ -61,4 +74,60 @@ void determineURIType(request &cRequest, char (&reqTargetStr)[]) {
   } else {
     cRequest.URIType =  ABS_PATH;
   }
+}
+
+std::string URITypeToStr(requestURIType &r) {
+  switch (r) {
+    case GENERAL:
+      return "GENERAL";
+    case ABS_URI:
+      return "ABS_URI";
+    case AUTHORITY:
+      return "AUTHORITY";
+    default:
+      return "ABS_PATH";
+  }
+}
+
+void determineReqURIForm(request &cReq, char (&strBuffer)[]) {
+
+  if (strcmp(strBuffer,"*") == 0) {
+    cReq.URIType = GENERAL;
+  } else if (strncmp(strBuffer,"http://",7) == 0) {
+    cReq.URIType = ABS_URI;
+  } else if (strcmp(strBuffer,"authority") == 0) {
+    cReq.URIType = AUTHORITY;
+  } else {
+    cReq.URIType = ABS_PATH;
+  }
+
+  if (cReq.URIType == ABS_URI) {
+    char temp[1024];
+
+    for (int i = 7; i < 1024; i++) {
+      if (strBuffer[i] == '/') {
+        strncpy(temp,strBuffer+7,i-7);
+        cReq.headers["host"] = temp;
+        strcpy(temp,strBuffer+i);
+        cReq.requestTarget = temp;
+        return;
+      }
+    }
+
+    cReq.errorCode = 400;
+
+    
+
+  
+  } else {
+    cReq.requestTarget = strBuffer;
+  }
+}
+
+void obtainMinor(request &cReq, char (&strBuffer)[]) {
+if (strcmp(strBuffer,"HTTP/1.0") == 0) {
+  cReq.minorVersion = 0;
+} else if (strcmp(strBuffer,"HTTP/1.1") != 0) {
+  cReq.errorCode = 403;
+}
 }

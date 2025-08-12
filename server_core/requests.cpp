@@ -120,7 +120,9 @@ void spliceHeaders(std::string &headerLine, request &request) {
         request.errorCode = 400;
       } else if (request.URIType != ABS_URI && buffer[0] == "host"){
         request.headers.insert({buffer[0],buffer[1].substr(0,buffer[1].length()-1)});
-      } 
+      } else {
+        request.headers[buffer[0]] = buffer[1].substr(0,buffer[1].length()-1);
+      }
       
     } else {
       turnHeaderToLowercase(temp);

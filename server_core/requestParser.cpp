@@ -21,9 +21,9 @@ void parser(request &cRequest) {
 
       switch (stateTracker) {
         case REQLINE_HTTP_VER:
-          //set versioning (TODO)
           stateTracker = HEADER;
           resetPtr(stringBufferPtr,stringBuffer);
+          obtainMinor(cRequest,stringBuffer);
           break;
         case HEADER:
           //error 
@@ -33,10 +33,9 @@ void parser(request &cRequest) {
           resetPtr(secondaryBufferPtr,secondaryBuffer);
 
           turnHeaderToLowercase(stringBuffer,BUFFERSIZE);
-          cRequest.headers[stringBuffer] = secondaryBuffer;
+          checkHost(cRequest,stringBuffer,secondaryBuffer);
           stateTracker = BEGIN_BODY;
 
-          //std::cout << "testing: " << stringBuffer << " " << secondaryBuffer << '\n';
           break;
         case BEGIN_BODY:
           stateTracker = BODY;
@@ -70,6 +69,7 @@ void parser(request &cRequest) {
           determineURIType(cRequest,stringBuffer); //towrite
           stateTracker = REQLINE_HTTP_VER;
           resetPtr(stringBufferPtr,stringBuffer);
+          determineReqURIForm(cRequest,stringBuffer);
         }
       } else 
 
@@ -85,10 +85,10 @@ void parser(request &cRequest) {
     }
   }
 
-
+  resetPtr(stringBufferPtr,stringBuffer);
   cRequest.rawBody = stringBuffer;
 
-  /*std::cout << methodReqToStr(cRequest.method) << "-" << cRequest.requestTarget << "-" << cRequest.URIType << "-" << cRequest.minorVersion << '\n';
+  /*std::cout << methodReqToStr(cRequest.method) << "-" << cRequest.requestTarget << "-" << URITypeToStr(cRequest.URIType) << "-" << cRequest.minorVersion << cRequest.errorCode << '\n';
 
   std::map<std::string,std::string>::iterator it = cRequest.headers.begin();
   while (it != cRequest.headers.end()) {
