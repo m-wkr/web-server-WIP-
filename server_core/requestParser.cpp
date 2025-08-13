@@ -10,6 +10,8 @@ void resetPtr(int &ptr,char (&ptrB)[]) {
 void parser(request &cRequest) {
   parseState stateTracker = REQLINE_METHOD;
 
+  bool leadingSpace = true;
+
   int BUFFERSIZE = 1024;
   char stringBuffer[BUFFERSIZE], secondaryBuffer[BUFFERSIZE];
   int stringBufferPtr = 0, secondaryBufferPtr = 0;
@@ -54,6 +56,7 @@ void parser(request &cRequest) {
 
       if (stateTracker == HEADER && cRequest.msgBuffer[i] == ':') {
         stateTracker = HEADER_CONTENT;
+        leadingSpace = true;
         i++;
         continue;
       }
@@ -70,12 +73,18 @@ void parser(request &cRequest) {
           stateTracker = REQLINE_HTTP_VER;
           resetPtr(stringBufferPtr,stringBuffer);
           determineReqURIForm(cRequest,stringBuffer);
+        } else if (stateTracker == HEADER_CONTENT) {
+          if (!leadingSpace) {
+            secondaryBuffer[secondaryBufferPtr] = cRequest.msgBuffer[i];
+            secondaryBufferPtr++;
+          }
         }
       } else 
 
       if (stateTracker == HEADER_CONTENT) {
         secondaryBuffer[secondaryBufferPtr] = cRequest.msgBuffer[i];
         secondaryBufferPtr++;
+        if (leadingSpace) leadingSpace = false;
       } else {
         stringBuffer[stringBufferPtr] = cRequest.msgBuffer[i];
         stringBufferPtr++;
@@ -88,7 +97,7 @@ void parser(request &cRequest) {
   resetPtr(stringBufferPtr,stringBuffer);
   cRequest.rawBody = stringBuffer;
 
-  /*std::cout << methodReqToStr(cRequest.method) << "-" << cRequest.requestTarget << "-" << URITypeToStr(cRequest.URIType) << "-" << cRequest.minorVersion << cRequest.errorCode << '\n';
+  std::cout << methodReqToStr(cRequest.method) << "-" << cRequest.requestTarget << "-" << URITypeToStr(cRequest.URIType) << "-" << cRequest.minorVersion << cRequest.errorCode << '\n';
 
   std::map<std::string,std::string>::iterator it = cRequest.headers.begin();
   while (it != cRequest.headers.end()) {
@@ -96,5 +105,5 @@ void parser(request &cRequest) {
     it++;
   }
 
-  std::cout << cRequest.rawBody;*/
+  std::cout << cRequest.rawBody;
 }

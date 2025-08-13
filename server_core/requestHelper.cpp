@@ -13,9 +13,9 @@ void turnHeaderToLowercase(char (&header)[],int size) {
 }
 
 void checkHost(request &cReq, char (&strBuffer)[], char (&sndBuffer)[]) {
-  if (cReq.headers.contains("host") && strcmp(strBuffer,"host") && cReq.URIType != ABS_URI) {
+  if (cReq.headers.contains("host") && strcmp(strBuffer,"host") == 0 && cReq.URIType != ABS_URI) {
     cReq.errorCode = 400;
-  } else if (cReq.URIType != ABS_URI && strcmp(strBuffer,"host")){
+  } else if (cReq.URIType != ABS_URI && strcmp(strBuffer,"host") == 0){
     cReq.headers[strBuffer] = sndBuffer;
   } 
 
