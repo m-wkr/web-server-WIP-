@@ -17,3 +17,5 @@ std::string URITypeToStr(requestURIType &r);
 void determineReqURIForm(request &cReq, char (&strBuffer)[]);
 
 void obtainMinor(request &cReq, char (&strBuffer)[]);
+
+void requestDebug(request &cRequest);

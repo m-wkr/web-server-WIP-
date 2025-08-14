@@ -183,16 +183,4 @@ void requestParser(request &currentRequest) {
   if (!currentRequest.headers.contains("host") && currentRequest.minorVersion == 1) {
     currentRequest.errorCode = 400;
   }
-
-  //Debugging 
-  /*std::cout << methodReqToStr(currentRequest.method) << "-" << currentRequest.requestTarget << "-" << currentRequest.URIType << "-" << currentRequest.minorVersion << '\n';
-
-  std::map<std::string,std::string>::iterator i = currentRequest.headers.begin();
-  while (i != currentRequest.headers.end()) {
-    std::cout << i->first << "__" << i->second << '\n';
-    i++;
-  }
-
-  std::cout << rawBody;*/
-
 }

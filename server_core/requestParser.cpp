@@ -18,7 +18,7 @@ void parser(request &cRequest) {
 
   int i = 0;
 
-  while (i + 1 < BUFFERSIZE) {
+  while (i + 1 < BUFFERSIZE && cRequest.msgBuffer[i] != '\0') {
     if (cRequest.msgBuffer[i] == '\r' && cRequest.msgBuffer[i+1] == '\n') {
 
       switch (stateTracker) {
@@ -96,14 +96,4 @@ void parser(request &cRequest) {
 
   resetPtr(stringBufferPtr,stringBuffer);
   cRequest.rawBody = stringBuffer;
-
-  std::cout << methodReqToStr(cRequest.method) << "-" << cRequest.requestTarget << "-" << URITypeToStr(cRequest.URIType) << "-" << cRequest.minorVersion << cRequest.errorCode << '\n';
-
-  std::map<std::string,std::string>::iterator it = cRequest.headers.begin();
-  while (it != cRequest.headers.end()) {
-    std::cout << it->first << "__" << it->second << '\n';
-    it++;
-  }
-
-  std::cout << cRequest.rawBody;
 }

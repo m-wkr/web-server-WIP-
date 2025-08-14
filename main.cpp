@@ -33,9 +33,13 @@ int main() {
 
   requestParser(exampleReq);
 
+  requestDebug(exampleReq);
+
   request eReq;
 
   parser(eReq);
+
+  requestDebug(eReq);
 
 
   return 0;

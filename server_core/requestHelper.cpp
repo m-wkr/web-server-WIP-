@@ -1,6 +1,7 @@
 #include <string>
 #include <algorithm>
 #include <string.h>
+#include <iostream>
 #include "requestHelper.hpp"
 
 void turnHeaderToLowercase(char (&header)[],int size) {
@@ -125,9 +126,21 @@ void determineReqURIForm(request &cReq, char (&strBuffer)[]) {
 }
 
 void obtainMinor(request &cReq, char (&strBuffer)[]) {
-if (strcmp(strBuffer,"HTTP/1.0") == 0) {
-  cReq.minorVersion = 0;
-} else if (strcmp(strBuffer,"HTTP/1.1") != 0) {
-  cReq.errorCode = 403;
+  if (strcmp(strBuffer,"HTTP/1.0") == 0) {
+    cReq.minorVersion = 0;
+  } else if (strcmp(strBuffer,"HTTP/1.1") != 0) {
+    cReq.errorCode = 403;
+  }
 }
+
+void requestDebug(request &cRequest) {
+  std::cout << methodReqToStr(cRequest.method) << "-" << cRequest.requestTarget << "-" << URITypeToStr(cRequest.URIType) << "-" << cRequest.minorVersion << cRequest.errorCode << '\n';
+
+  std::map<std::string,std::string>::iterator it = cRequest.headers.begin();
+  while (it != cRequest.headers.end()) {
+    std::cout << it->first << "__" << it->second << '\n';
+    it++;
+  }
+
+  std::cout << cRequest.rawBody << '\n';
 }
