@@ -19,29 +19,17 @@ enum requestURIType : u_int8_t {
 };
   
 struct request {
-  char msgBuffer[2048] = "GET / HTTP/1.1\r\nHost:   local host\r\nUser-Agent:    c  url/8.11.1\r\nAccept: */*\r\n\r\nhi\r\n";
+  char msgBuffer[2048] = "GET / HTTP/1.1\r\nHost: local host\r\nUser-Agent: curl/8.11.1\r\nAccept: */*\r\n\r\nhi\r\n";
   requestTypes method = HEAD;
   requestURIType URIType = ABS_PATH; //default assumption
   std::string requestTarget;
   int minorVersion = 1;
   std::map<std::string,std::string> headers;
-  
   int errorCode = 200;
-  
-  std::string getBody() {
-    return rawBody;
-  }
+  std::string rawBody;
 
   std::string getSpecifiedHeader(const std::string &headerName) {
-    try {
-      return headers.at(headerName);
-    }
-    catch (...) {
-      return "";
-    }
-    
+    if (headers.contains(headerName)) return headers[headerName];
+    else return "";
   }
-  
-  //private:
-  std::string rawBody;
 };
