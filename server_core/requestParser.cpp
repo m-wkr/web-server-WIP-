@@ -63,15 +63,14 @@ void parser(request &cRequest) {
 
       if (cRequest.msgBuffer[i] == ' ') {
         if (stateTracker == REQLINE_METHOD) {
+          resetPtr(stringBufferPtr,stringBuffer);
           strToReqMethod(cRequest,stringBuffer); //towrite
           stateTracker = REQLINE_URI;
-          resetPtr(stringBufferPtr,stringBuffer);
-
           
         } else if (stateTracker == REQLINE_URI) {
+          resetPtr(stringBufferPtr,stringBuffer);
           determineURIType(cRequest,stringBuffer); //towrite
           stateTracker = REQLINE_HTTP_VER;
-          resetPtr(stringBufferPtr,stringBuffer);
           determineReqURIForm(cRequest,stringBuffer);
         } else if (stateTracker == HEADER_CONTENT) {
           if (!leadingSpace) {

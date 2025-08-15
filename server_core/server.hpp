@@ -147,7 +147,7 @@ class server {
 
       //Obtain request info
       recv(clientSocketFD,currentRequest.msgBuffer,sizeof(currentRequest.msgBuffer),0);
-      requestParser(currentRequest);
+      parser(currentRequest);
   
       if (!validateHost()) {
         currentRequest.errorCode = 400;
@@ -232,10 +232,10 @@ class server {
 
       test++;
     }*/
-    while (true) {
-      clientHandler temp = clientHandler();
-      temp.handleClient(std::ref(serverSocket));
-    }
+    
+    clientHandler temp = clientHandler();
+    temp.handleClient(std::ref(serverSocket));
+    
 
     close(serverSocket.getFD());
   }
