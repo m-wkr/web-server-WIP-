@@ -15,10 +15,13 @@ static void BM_oldParser(benchmark::State& state) {
 
 BENCHMARK(BM_oldParser)->Repetitions(50);
 
+
+static request eReq;
+
 static void BM_newParser(benchmark::State& state) {
 
   for (auto _ : state) {
-    parser(exampleReq);
+    parser(eReq);
   }
 }
 

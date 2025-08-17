@@ -6,8 +6,11 @@
 #include <fstream>
 
 #include "mimeTypes.hpp"
+#include "requestParser.hpp"
 
 struct response {
+  requestTypes reqType;
+
   std::string statusCodeStr = "HTTP/1.1 ";
 
   int statusCode = 200;
@@ -79,9 +82,10 @@ struct response {
   }
 
   void setBody(const MIME MIMEtype,const std::string &body) {
-    rawBody = body;
+    if (reqType != HEAD) rawBody = body;
+    
     headers["Content-Type"] = getContentType(MIMEtype);
-    headers["Content-Length"] = std::to_string(rawBody.size());
+    headers["Content-Length"] = std::to_string(body.size());
   }
 
   void concatResponse() {

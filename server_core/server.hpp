@@ -1,4 +1,3 @@
-#include "requests.hpp"
 #include "socketWrapper.hpp"
 #include "response.hpp"
 #include <iostream>
@@ -57,7 +56,7 @@ class server {
     void delegateResourceByPath() {
       // Check resource is registered
       if (pathHandler.count(currentRequest.requestTarget)) {
-  
+        responseToBeSent.reqType = currentRequest.method; //NEW THING
         switch (currentRequest.method) {
           case OPTIONS:
             handleOptions();
@@ -157,7 +156,7 @@ class server {
       delegateResourceByPath();
   
   
-      responseToBeSent.addStatusCode(currentRequest.errorCode);
+      responseToBeSent.addStatusCode(currentRequest.errorCode); 
   
   
       //2. Construct resource & send it
