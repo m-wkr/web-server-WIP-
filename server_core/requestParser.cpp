@@ -1,9 +1,14 @@
 #include "requestParser.hpp"
 #include <iostream>
 
-void resetPtr(int &ptr,char (&ptrB)[]) {
-  ptrB[ptr] = '\0';
-  ptr = 0;
+void resetPtr(int &ptr,char (&ptrB)[],const int &bSize,request &cReq) {
+  if (ptr < bSize) {
+    ptrB[ptr] = '\0';
+    ptr = 0;
+  } else {
+    cReq.errorCode = 400;
+  }
+
 }
 
 //this needs to be tidied
@@ -18,21 +23,18 @@ void parser(request &cRequest) {
 
   int i = 0;
 
-  while (i + 1 < BUFFERSIZE && cRequest.msgBuffer[i] != '\0') {
+  while (i + 1 < BUFFERSIZE && cRequest.msgBuffer[i] != '\0' && cRequest.errorCode == 200) {
     if (cRequest.msgBuffer[i] == '\r' && cRequest.msgBuffer[i+1] == '\n') {
 
       switch (stateTracker) {
         case REQLINE_HTTP_VER:
           stateTracker = HEADER;
-          resetPtr(stringBufferPtr,stringBuffer);
+          resetPtr(stringBufferPtr,stringBuffer,BUFFERSIZE,cRequest);
           obtainMinor(cRequest,stringBuffer);
           break;
-        case HEADER:
-          //error 
-          break;
         case HEADER_CONTENT:
-          resetPtr(stringBufferPtr,stringBuffer);
-          resetPtr(secondaryBufferPtr,secondaryBuffer);
+          resetPtr(stringBufferPtr,stringBuffer,BUFFERSIZE,cRequest);
+          resetPtr(secondaryBufferPtr,secondaryBuffer,BUFFERSIZE,cRequest);
 
           turnHeaderToLowercase(stringBuffer,BUFFERSIZE);
           checkHost(cRequest,stringBuffer,secondaryBuffer);
@@ -43,6 +45,9 @@ void parser(request &cRequest) {
           stateTracker = BODY;
           break;
         case BODY:
+          break;
+        default:
+          cRequest.errorCode = 400;
           break;
       }
 
@@ -63,12 +68,12 @@ void parser(request &cRequest) {
 
       if (cRequest.msgBuffer[i] == ' ') {
         if (stateTracker == REQLINE_METHOD) {
-          resetPtr(stringBufferPtr,stringBuffer);
+          resetPtr(stringBufferPtr,stringBuffer,BUFFERSIZE,cRequest);
           strToReqMethod(cRequest,stringBuffer); //towrite
           stateTracker = REQLINE_URI;
           
         } else if (stateTracker == REQLINE_URI) {
-          resetPtr(stringBufferPtr,stringBuffer);
+          resetPtr(stringBufferPtr,stringBuffer,BUFFERSIZE,cRequest);
           determineURIType(cRequest,stringBuffer); //towrite
           stateTracker = REQLINE_HTTP_VER;
           determineReqURIForm(cRequest,stringBuffer);
@@ -93,6 +98,8 @@ void parser(request &cRequest) {
     }
   }
 
-  resetPtr(stringBufferPtr,stringBuffer);
-  cRequest.rawBody = stringBuffer;
+  if (cRequest.errorCode == 200) {
+    resetPtr(stringBufferPtr,stringBuffer,BUFFERSIZE,cRequest);
+    cRequest.rawBody = stringBuffer;
+  }
 }
