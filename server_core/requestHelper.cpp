@@ -116,9 +116,6 @@ void determineReqURIForm(request &cReq, char (&strBuffer)[]) {
     }
 
     cReq.errorCode = 400;
-
-    
-
   
   } else {
     cReq.requestTarget = strBuffer;
@@ -130,6 +127,8 @@ void obtainMinor(request &cReq, char (&strBuffer)[]) {
     cReq.minorVersion = 0;
   } else if (strcmp(strBuffer,"HTTP/1.1") != 0) {
     cReq.errorCode = 403;
+  } else {
+    cReq.minorVersion = 1;
   }
 }
 
