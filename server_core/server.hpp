@@ -2,6 +2,9 @@
 #include "response.hpp"
 #include <iostream>
 #include <unordered_map>
+#include <fcntl.h>
+#include <unistd.h>
+#include <sys/epoll.h>
 //#include <thread>
 
 //std::atomic_bool listening = true;
@@ -17,6 +20,13 @@ namespace helpers {
     }
     //listening = false;
   };
+}
+
+void setNonblocking(int fd) {
+  int flags = fcntl(fd,F_GETFL,0);
+
+  flags |= O_NONBLOCK;
+  fcntl(fd,F_SETFL,flags);
 }
 
 
@@ -141,8 +151,8 @@ class server {
       return hostAliases.count(currentRequest.headers["host"]) != 0;
     }
     public:
-    void handleClient(socketWrapper &serverSocket) {
-      int clientSocketFD = accept(serverSocket.getFD(),nullptr,nullptr);
+    void handleClient(int clientSocketFD) { //change to fd!
+      //int clientSocketFD = accept(serverSocket.getFD(),nullptr,nullptr);
 
       //Obtain request info
       recv(clientSocketFD,currentRequest.msgBuffer,sizeof(currentRequest.msgBuffer),0);
@@ -216,26 +226,48 @@ class server {
   void startListening() {
     listen(serverSocket.getFD(),5);
 
-    //std::cout << "Terminate server performance via any input followed by return\n";
+    struct epoll_event event, eventsQueue[1024];
+    int epollFD = epoll_create1(0);
 
-    //std::thread serverUpdater(helpers::setListeningState);
-    //serverUpdater.detach();
+    event.events = EPOLLIN;
+    event.data.fd = serverSocket.getFD();
 
-    /*int test = 0;
-    while (test < 1) {
-      clientHandler temp = clientHandler();
+    setNonblocking(serverSocket.getFD());
 
-      std::thread worker(&clientHandler::handleClient,clientHandler(),std::ref(serverSocket));
 
-      worker.join();
+    epoll_ctl(epollFD, EPOLL_CTL_ADD, serverSocket.getFD(), &event);
 
-      test++;
-    }*/
-    
-    clientHandler temp = clientHandler();
-    temp.handleClient(std::ref(serverSocket));
-    
 
+    while (true) {
+      int numEvents = epoll_wait(epollFD,eventsQueue,5,-1);
+
+      for (int i = 0; i < numEvents; i++) {
+        //peer connection
+        if (eventsQueue[i].data.fd == serverSocket.getFD()) {
+          int newClientFD = accept(serverSocket.getFD(),nullptr,nullptr);
+          setNonblocking(newClientFD);
+          struct epoll_event ev;
+          ev.events = EPOLLIN; //Notify for read events
+          ev.events |= EPOLLOUT; //Notify for write events
+          ev.data.fd = newClientFD;
+
+          epoll_ctl(epollFD,EPOLL_CTL_ADD, newClientFD, &ev);
+        } else {
+          //peer socket ready
+
+          if (eventsQueue[i].events & (EPOLLIN | EPOLLOUT)) {
+            int curClientFD = eventsQueue[i].data.fd;
+            clientHandler cClient;
+            cClient.handleClient(curClientFD);
+
+            epoll_ctl(epollFD, EPOLL_CTL_DEL, curClientFD,NULL);
+            close(curClientFD);
+          } 
+        }
+      }
+    }
+
+    close(epollFD);    
     close(serverSocket.getFD());
   }
 };
